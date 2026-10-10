@@ -61,7 +61,7 @@ describe('hall management (FR-HALL-01/02)', () => {
     const busy = await createHall(knex, { name: 'Busy', capacity: 100 });
     const blocked = await createHall(knex, { name: 'Blocked', capacity: 100 });
     const small = await createHall(knex, { name: 'Small', capacity: 20 });
-    const free = await createHall(knex, { name: 'Free', capacity: 100 });
+    await createHall(knex, { name: 'Free', capacity: 100 });
     await submittedEvent(app, a, busy.id);
     const s = slot();
     await post(admins.hallToken, `/halls/${blocked.id}/blocked-slots`, {

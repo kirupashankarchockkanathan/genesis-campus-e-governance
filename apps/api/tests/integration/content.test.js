@@ -33,11 +33,12 @@ beforeEach(async () => {
   _resetStreamTokens();
 });
 
-const send = (method) => (token, path, body) =>
-  request(app)
-    [method](`${API}${path}`)
+const send = (method) => (token, path, body) => {
+  const r = request(app);
+  return r[method](`${API}${path}`)
     .set(bearer(token))
     .send(body ?? {});
+};
 const post = send('post');
 const patch = send('patch');
 const put = send('put');
@@ -245,10 +246,6 @@ describe('calendar (FR-CAL-01..06)', () => {
     const ctx = await clubWithTeam(knex, app);
     const admins = await makeAdmins(knex, app);
     const day = new Date(Date.now() + 10 * DAY);
-    const mk = (h, m) => new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), h, m));
-    // 00:30 IST = 19:00 UTC the previous day; 23:30 IST = 18:00 UTC the same day.
-    const early = mk(-5, -30); // 18:30 UTC previous day = 00:00 IST ... use explicit offsets instead
-    expect(early.toISOString()).toBeTruthy();
     const s1 = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 19, 0)); // 00:30 IST next day
     const s2 = new Date(Date.UTC(day.getUTCFullYear(), day.getUTCMonth(), day.getUTCDate(), 18, 0)); // 23:30 IST same day
     const hall1 = await createHall(knex);
