@@ -37,7 +37,7 @@ export default function FileField({ label, hint, value, onChange, accept, image 
   return (
     <div>
       <div className={cn('flex flex-wrap items-center gap-3 rounded-xl border bg-white px-4 py-3', msg ? 'border-[#e8a39b]' : 'border-line')}>
-        <span className={cn('grid h-9 w-9 shrink-0 place-items-center rounded-lg', value ? 'bg-brand-50 text-brand-600' : 'bg-[#eef1ef] text-ink-mute')}>
+        <span className={cn('grid h-9 w-9 shrink-0 place-items-center rounded-lg', value ? 'bg-brand-50 text-brand-600' : 'bg-[#f1eeee] text-ink-mute')}>
           <Icon name={value ? 'FileCheck2' : image ? 'Image' : 'FileText'} className="h-4 w-4" />
         </span>
         <div className="min-w-0 flex-1">

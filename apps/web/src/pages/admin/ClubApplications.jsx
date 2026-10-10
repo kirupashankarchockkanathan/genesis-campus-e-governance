@@ -50,7 +50,7 @@ export function ClubApplicationsList() {
                 </div>
                 <p className="mt-2 line-clamp-2 text-[11px] text-ink-soft">{a.objectives}</p>
                 <div className="mt-3 flex flex-wrap gap-2 text-[10px] font-semibold">
-                  <span className="rounded-full bg-[#eef1ef] px-2.5 py-1 text-ink-soft">{a.memberCount} founding members</span>
+                  <span className="rounded-full bg-[#f1eeee] px-2.5 py-1 text-ink-soft">{a.memberCount} founding members</span>
                   {a.aiCheck ? <span className={`rounded-full px-2.5 py-1 ${top && top.score >= 0.5 ? 'bg-rose-soft text-rose-ink' : 'bg-brand-50 text-brand-700'}`}>{top ? `Top match ${Math.round(top.score * 100)}%` : 'No similar clubs'}</span> : <span className="rounded-full bg-amber-soft px-2.5 py-1 text-amber-ink">Duplicate check not run</span>}
                 </div>
               </Link>

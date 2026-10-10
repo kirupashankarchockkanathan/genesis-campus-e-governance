@@ -10,7 +10,7 @@ export default function ClubCard({ club, onView }) {
   return (
     <article className="card flex flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-pop">
       <div className={cn('relative h-[106px] overflow-hidden', tone.bg)}>
-        <div className="absolute inset-0 opacity-50" style={{ backgroundImage: 'radial-gradient(rgba(12,59,51,0.12) 1px, transparent 1px)', backgroundSize: '10px 10px' }} />
+        <div className="absolute inset-0 opacity-50" style={{ backgroundImage: 'radial-gradient(rgba(26,26,26,0.12) 1px, transparent 1px)', backgroundSize: '10px 10px' }} />
         <div className="absolute -left-4 top-6 h-24 w-44 rotate-[-12deg] rounded-[50%] border border-ink/10" />
         <span className={cn('pointer-events-none absolute -right-1 top-1 select-none text-[78px] font-extrabold leading-none', tone.letter)}>{club.letter}</span>
         <span className="absolute left-3.5 top-3.5 rounded-lg bg-white/90 px-2.5 py-1 text-[9px] font-bold text-brand-900">{club.category}</span>

@@ -14,7 +14,7 @@ function Bars({ data, color = 'bg-brand-500' }) {
       {data.map((d) => (
         <li key={d.label} className="flex items-center gap-3 text-[11px]">
           <span className="w-36 shrink-0 truncate text-ink-soft">{d.label}</span>
-          <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-[#eef1ef]"><span className={`block h-full rounded-full ${color}`} style={{ width: `${(d.value / max) * 100}%` }} /></span>
+          <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-[#f1eeee]"><span className={`block h-full rounded-full ${color}`} style={{ width: `${(d.value / max) * 100}%` }} /></span>
           <span className="w-6 text-right font-bold text-brand-900">{d.value}</span>
         </li>
       ))}

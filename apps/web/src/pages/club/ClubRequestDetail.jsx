@@ -64,7 +64,7 @@ export default function ClubRequestDetail() {
                 {r.physical.status === 'verified' && <div className="rounded-xl bg-canvas px-3 py-2 text-[11px] text-ink-soft">Ref {r.physical.refNo} · received {r.physical.receivedOn ? fmtDate(r.physical.receivedOn) : '—'}</div>}
                 {r.physical.status === 'issue' && <div className="rounded-xl bg-amber-soft px-3 py-2 text-[11px] text-amber-ink">Issue with the hard copy: {r.physical.note}</div>}
                 {r.physical.status === 'pending' && r.status === 'submitted' && <div className="rounded-xl bg-canvas px-3 py-2 text-[11px] text-ink-soft">Deliver the signed permission letter to the OSA office.</div>}
-                <div className="flex items-center justify-between"><dt className="font-semibold text-ink-soft">OSA approval</dt><dd>{r.approval ? <span className="pill bg-brand-50 text-brand-700">Approved</span> : <span className="pill bg-[#eef1ef] text-ink-soft">Pending</span>}</dd></div>
+                <div className="flex items-center justify-between"><dt className="font-semibold text-ink-soft">OSA approval</dt><dd>{r.approval ? <span className="pill bg-brand-50 text-brand-700">Approved</span> : <span className="pill bg-[#f1eeee] text-ink-soft">Pending</span>}</dd></div>
               </dl>
             </Card>
           )}

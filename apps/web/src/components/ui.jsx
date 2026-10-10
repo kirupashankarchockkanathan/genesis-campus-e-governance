@@ -23,7 +23,7 @@ export function Logo({ light = false }) {
   return (
     <div className="flex items-center gap-3">
       <div className="grid h-10 w-10 place-items-center rounded-xl bg-brand-900 ring-1 ring-brand-700">
-        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="#4fd1a5" strokeWidth="2.4" strokeLinecap="round">
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="#ffffff" strokeWidth="2.4" strokeLinecap="round">
           <path d="M7 19l3-14M12 19l3-14M17 19l3-14" transform="translate(-2 0)" />
         </svg>
       </div>
@@ -106,7 +106,7 @@ export function Toggle({ checked, onChange, label }) {
       aria-checked={checked}
       aria-label={label}
       onClick={() => onChange(!checked)}
-      className={cn('relative h-6 w-11 shrink-0 rounded-full transition', checked ? 'bg-brand-500' : 'bg-[#dfe7e3]')}
+      className={cn('relative h-6 w-11 shrink-0 rounded-full transition', checked ? 'bg-brand-500' : 'bg-[#e2dcde]')}
     >
       <span className={cn('absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all', checked ? 'left-[22px]' : 'left-0.5')} />
     </button>

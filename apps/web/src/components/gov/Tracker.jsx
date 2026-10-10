@@ -7,7 +7,7 @@ const STYLE = {
   current: { ring: 'bg-white text-brand-700 ring-2 ring-brand-500', icon: 'Circle', text: 'text-brand-900' },
   warn: { ring: 'bg-amber-soft text-amber-ink ring-2 ring-[#e3a02c]', icon: 'AlertTriangle', text: 'text-amber-ink' },
   failed: { ring: 'bg-rose-soft text-rose-ink ring-2 ring-[#e06052]', icon: 'X', text: 'text-rose-ink' },
-  todo: { ring: 'bg-[#eef1ef] text-ink-mute', icon: 'Circle', text: 'text-ink-mute' },
+  todo: { ring: 'bg-[#f1eeee] text-ink-mute', icon: 'Circle', text: 'text-ink-mute' },
 };
 
 /** 5-step progress tracker for an event request. */

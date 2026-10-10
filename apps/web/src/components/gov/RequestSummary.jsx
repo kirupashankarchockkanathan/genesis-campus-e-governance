@@ -49,7 +49,7 @@ export function DocumentsCard({ request: r, action }) {
           const f = r.documents?.[d.key];
           return (
             <li key={d.key} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
-              <span className={cn('grid h-9 w-9 shrink-0 place-items-center rounded-lg', f ? 'bg-brand-50 text-brand-600' : d.required ? 'bg-rose-soft text-rose-ink' : 'bg-[#eef1ef] text-ink-mute')}>
+              <span className={cn('grid h-9 w-9 shrink-0 place-items-center rounded-lg', f ? 'bg-brand-50 text-brand-600' : d.required ? 'bg-rose-soft text-rose-ink' : 'bg-[#f1eeee] text-ink-mute')}>
                 <Icon name={f ? 'FileCheck2' : d.required ? 'FileWarning' : 'FileText'} className="h-4 w-4" />
               </span>
               <div className="min-w-0 flex-1">

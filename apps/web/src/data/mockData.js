@@ -71,10 +71,10 @@ export const EVENT_TONES = {
 };
 
 export const STATUS_META = {
-  open: { label: 'Registration open', cls: 'bg-brand-50 text-brand-700', dot: 'bg-brand-500' },
+  open: { label: 'Registration open', cls: 'bg-ok-50 text-ok-700', dot: 'bg-ok-500' },
   closing: { label: 'Closing soon', cls: 'bg-amber-soft text-amber-ink', dot: 'bg-[#e3a02c]' },
   full: { label: 'Fully booked', cls: 'bg-rose-soft text-rose-ink', dot: 'bg-[#e06052]' },
-  closed: { label: 'Closed', cls: 'bg-[#eef1ef] text-ink-soft', dot: 'bg-ink-mute' },
+  closed: { label: 'Closed', cls: 'bg-[#f1eeee] text-ink-soft', dot: 'bg-ink-mute' },
 };
 
 export const CATEGORY_STYLES = {

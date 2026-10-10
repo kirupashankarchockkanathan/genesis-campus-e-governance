@@ -15,7 +15,7 @@ The plan is [`docs/PROJECT_SPEC.md`](docs/PROJECT_SPEC.md) (also `docs/PROJECT_S
 
 ## What you get
 
-The web app is the supplied **GENESIS Campus Connect (Amrita theme)** UI, unchanged in design and wired to the real API and database. Three entry paths on the first screen: **Student**, **Club Authority** and **Administrator** (Office of Student Affairs, or Events Section).
+The web app is the supplied **GENESIS Campus Connect** UI, in the **Amrita brand theme** (AM Maroon `#A4123F`, black, Open Sans; see decision D51), wired to the real API and database. Three entry paths on the first screen: **Student**, **Club Authority** and **Administrator** (Office of Student Affairs, or Events Section).
 
 - **Students**: dashboard, explore events, event details with live seat counts, one-click registration (checked by the server), calendar, registrations and history, clubs directory and favourites, notifications, Campus Assistant, profile, settings.
 - **Club Authority**: overview, club profile (own club only), members, event requests (new, edit, resubmit after corrections, with poster and documents), request tracker and feedback, promotions, our events.

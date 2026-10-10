@@ -1,15 +1,15 @@
 import { cn } from '../../utils/helpers';
 
 const TONES = {
-  green: 'bg-brand-50 text-brand-700',
+  green: 'bg-ok-50 text-ok-700',
   strong: 'bg-brand-800 text-white',
   amber: 'bg-amber-soft text-amber-ink',
   rose: 'bg-rose-soft text-rose-ink',
   sky: 'bg-sky-soft text-sky-ink',
   plum: 'bg-plum-soft text-plum-ink',
-  gray: 'bg-[#eef1ef] text-ink-soft',
+  gray: 'bg-[#f1eeee] text-ink-soft',
 };
-const DOTS = { green: 'bg-brand-500', strong: 'bg-brand-200', amber: 'bg-[#e3a02c]', rose: 'bg-[#e06052]', sky: 'bg-[#4a73c4]', plum: 'bg-[#8a5bb0]', gray: 'bg-ink-mute' };
+const DOTS = { green: 'bg-ok-500', strong: 'bg-brand-200', amber: 'bg-[#e3a02c]', rose: 'bg-[#e06052]', sky: 'bg-[#4a73c4]', plum: 'bg-[#8a5bb0]', gray: 'bg-ink-mute' };
 
 export function Badge({ tone = 'gray', children, dot = true, className }) {
   return (

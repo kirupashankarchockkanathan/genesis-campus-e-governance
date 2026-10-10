@@ -68,7 +68,7 @@ export default function Overview() {
                       <div className="truncate text-xs font-extrabold text-brand-900">{r.title}</div>
                       <div className="text-[10px] text-ink-mute">{r.id} · {getClubFrom(state, r.clubId)?.name} · {fmtDate(r.date)}</div>
                     </div>
-                    <span className={`pill ${{ sky: 'bg-sky-soft text-sky-ink', green: 'bg-brand-50 text-brand-700', amber: 'bg-amber-soft text-amber-ink', gray: 'bg-[#eef1ef] text-ink-soft' }[tone]}`}>{action}</span>
+                    <span className={`pill ${{ sky: 'bg-sky-soft text-sky-ink', green: 'bg-brand-50 text-brand-700', amber: 'bg-amber-soft text-amber-ink', gray: 'bg-[#f1eeee] text-ink-soft' }[tone]}`}>{action}</span>
                     <Icon name="ChevronRight" className="h-4 w-4 text-ink-mute" />
                   </Link>
                 </li>

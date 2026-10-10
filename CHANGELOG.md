@@ -2,6 +2,10 @@
 
 All notable changes, newest first. One line per completed task (spec section 0, rule 9).
 
+## 1.2.0 (Amrita brand theme)
+
+- Re-themed the UI to the Amrita brand identity (AM Maroon #A4123F, black 90%, Open Sans) from amrita.edu/branding; layout and pages unchanged.
+
 ## 1.1.0 (Amrita UI on the real backend)
 
 - Replaced the web app with the supplied GENESIS Campus Connect (Amrita theme) UI, design unchanged.

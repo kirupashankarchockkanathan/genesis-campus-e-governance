@@ -132,7 +132,7 @@ export default function RequestDetail() {
             ) : <p className="mt-3 text-[11px] text-ink-mute">{deniedReason('request.physical')}</p>}
           </Step>
 
-          <Step n={3} title="Final approval (OSA)" badge={r.approval ? <span className="pill bg-brand-50 text-brand-700">Granted</span> : <span className="pill bg-[#eef1ef] text-ink-soft">Not yet</span>}>
+          <Step n={3} title="Final approval (OSA)" badge={r.approval ? <span className="pill bg-brand-50 text-brand-700">Granted</span> : <span className="pill bg-[#f1eeee] text-ink-soft">Not yet</span>}>
             {r.approval ? (
               <p className="text-[11px] text-ink-soft">Approved by <b className="text-brand-900">{r.approval.by}</b> · {fmtDateTime(r.approval.at)}{r.approval.note ? ` — “${r.approval.note}”` : ''}</p>
             ) : (

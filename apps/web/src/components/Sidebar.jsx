@@ -44,7 +44,7 @@ export function SidebarContent({ items, sectionLabel, onNavigate, showAssistantC
             <Icon name={it.icon} className="h-[18px] w-[18px]" />
             <span className="flex-1">{it.label}</span>
             {(it.count ?? (it.badge ? unreadCount : 0)) > 0 && (
-              <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#e5eee9] px-1.5 text-[10px] font-bold text-ink-soft">
+              <span className="grid h-5 min-w-5 place-items-center rounded-full bg-[#ece7e8] px-1.5 text-[10px] font-bold text-ink-soft">
                 {it.count ?? unreadCount}
               </span>
             )}

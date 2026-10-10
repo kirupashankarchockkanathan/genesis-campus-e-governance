@@ -156,7 +156,7 @@ export default function MyRegistrations() {
                     <td className="py-3.5"><span className="flex items-center gap-3"><span className="grid h-7 w-7 place-items-center rounded-lg bg-brand-50 text-brand-600"><Icon name="CalendarDays" className="h-3.5 w-3.5" /></span><b className="text-brand-900">{h.title}</b></span></td>
                     <td>{h.organizer}</td>
                     <td>{h.date}</td>
-                    <td><span className={cn('pill', h.status === 'Attended' ? 'bg-brand-50 text-brand-700' : 'bg-[#eef1ef] text-ink-soft')}><span className={cn('h-1.5 w-1.5 rounded-full', h.status === 'Attended' ? 'bg-brand-500' : 'bg-ink-mute')} /> {h.status}</span></td>
+                    <td><span className={cn('pill', h.status === 'Attended' ? 'bg-brand-50 text-brand-700' : 'bg-[#f1eeee] text-ink-soft')}><span className={cn('h-1.5 w-1.5 rounded-full', h.status === 'Attended' ? 'bg-brand-500' : 'bg-ink-mute')} /> {h.status}</span></td>
                     <td className="text-right">{h.status === 'Attended' && <button onClick={() => app.notify('Certificate download is not enabled in this demo.', 'info')} className="text-ink-mute hover:text-brand-700" aria-label="Download certificate"><Icon name="Download" className="h-4 w-4" /></button>}</td>
                   </tr>
                 ))}

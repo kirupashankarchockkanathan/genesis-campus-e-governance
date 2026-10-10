@@ -79,7 +79,7 @@ function EventCard({ event }) {
           ) : canRegister ? (
             <button onClick={() => app.register(event.id)} className="btn-primary px-4 py-2">Register</button>
           ) : (
-            <button disabled className="rounded-xl bg-[#eef1ef] px-3.5 py-2 text-[10px] font-bold text-ink-mute">{full ? 'Fully booked' : 'Registration closed'}</button>
+            <button disabled className="rounded-xl bg-[#f1eeee] px-3.5 py-2 text-[10px] font-bold text-ink-mute">{full ? 'Fully booked' : 'Registration closed'}</button>
           )}
         </div>
       </div>

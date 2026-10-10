@@ -48,7 +48,7 @@ export function Tabs({ tabs, value, onChange }) {
           className={cn('flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-2 text-[11px] font-bold transition', value === t.key ? 'bg-brand-800 text-white' : 'text-ink-soft hover:bg-brand-50')}
         >
           {t.label}
-          {t.count != null && <span className={cn('rounded-full px-1.5 text-[10px]', value === t.key ? 'bg-white/20' : 'bg-[#eef1ef]')}>{t.count}</span>}
+          {t.count != null && <span className={cn('rounded-full px-1.5 text-[10px]', value === t.key ? 'bg-white/20' : 'bg-[#f1eeee]')}>{t.count}</span>}
         </button>
       ))}
     </div>
