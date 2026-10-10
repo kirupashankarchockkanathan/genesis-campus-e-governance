@@ -5,7 +5,8 @@ import { EventEmitter } from 'node:events';
 export const hub = new EventEmitter();
 hub.setMaxListeners(0);
 
-export const publish = (userId, notification) => hub.emit(`user:${userId}`, notification);
+/** `event` is the SSE event name: 'notification' (default) or 'discussion' for live club chat. */
+export const publish = (userId, data, event = 'notification') => hub.emit(`user:${userId}`, data, event);
 export const subscribe = (userId, listener) => {
   hub.on(`user:${userId}`, listener);
   return () => hub.off(`user:${userId}`, listener);

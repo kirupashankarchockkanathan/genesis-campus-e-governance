@@ -13,15 +13,18 @@ import { eventsRouter } from './modules/events/events.routes.js';
 import { hallsRouter } from './modules/halls/halls.routes.js';
 import { contentRouter } from './modules/content/content.routes.js';
 import { notificationsRouter } from './modules/notifications/notifications.routes.js';
+import { engagementRouter } from './modules/engagement/engagement.routes.js';
+import { chatRouter } from './modules/chat/chat.routes.js';
 import { uploadDir } from './lib/storage.js';
 
 /**
  * Builds the Express app (used by server.js and by tests).
  * `extraRoutes(router)` lets tests mount probe routes under /api/v1.
  */
-export function createApp({ db = getDb(), extraRoutes } = {}) {
+export function createApp({ db = getDb(), extraRoutes, llm } = {}) {
   const app = express();
   app.locals.db = db;
+  if (llm !== undefined) app.locals.llm = llm; // tests inject a mocked model client
   app.disable('x-powered-by');
   app.set('trust proxy', config.isProd ? 1 : false);
   app.use(requestId);
@@ -56,6 +59,8 @@ export function createApp({ db = getDb(), extraRoutes } = {}) {
   api.use('/', eventsRouter);
   api.use('/', hallsRouter);
   api.use('/', notificationsRouter);
+  api.use('/', engagementRouter);
+  api.use('/', chatRouter);
   if (extraRoutes) extraRoutes(api);
   app.use('/api/v1', api);
 

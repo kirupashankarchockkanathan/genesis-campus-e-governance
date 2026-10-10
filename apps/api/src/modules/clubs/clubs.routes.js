@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { CLUB_CATEGORIES, CLUB_ROLE_KEYS, PERMISSIONS, PLATFORM_ROLES, emailSchema } from '@ccp/shared';
+import { CLUB_CATEGORIES, PERMISSIONS, PLATFORM_ROLES, emailSchema } from '@ccp/shared';
 import { getDb } from '../../db/knex.js';
 import { requireAuth, requireClubPermission, requirePlatformRole } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
@@ -29,9 +29,11 @@ const listQuery = z.object({
   q: z.string().trim().max(100).optional(),
   category: z.string().trim().max(60).optional(),
 });
-const addMemberSchema = z.object({ email: emailSchema, roleKey: z.enum(CLUB_ROLE_KEYS).optional() });
-const roleSchema = z.object({ roleKey: z.enum(CLUB_ROLE_KEYS) });
-const transferSchema = z.object({ toUserId: z.string().min(1), demoteTo: z.enum(CLUB_ROLE_KEYS).optional() });
+// Role keys include custom roles (CUSTOM_*), so they are validated against the club's own roles in the service.
+const roleKeySchema = z.string().trim().min(1).max(60);
+const addMemberSchema = z.object({ email: emailSchema, roleKey: roleKeySchema.optional() });
+const roleSchema = z.object({ roleKey: roleKeySchema });
+const transferSchema = z.object({ toUserId: z.string().min(1), demoteTo: roleKeySchema.optional() });
 
 /** Resolves a club id from a path segment that may be an id or a slug. */
 const clubIdFromParams = async (req, knex) =>

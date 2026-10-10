@@ -2,6 +2,7 @@ import { BOOKING_STATUS, EVENT_STATUS, FORM_STATUS, REGISTRATION_STATUS } from '
 import { clock } from '../lib/clock.js';
 import { toDb } from '../db/helpers.js';
 import { audit } from '../lib/audit.js';
+import { closeExpired as closeExpiredRecruitments } from '../modules/recruitment/recruitment.service.js';
 import { notify, registeredStudentIds } from '../modules/notifications/notifications.service.js';
 
 const hours = (n) => n * 3600 * 1000;
@@ -112,6 +113,7 @@ export async function runAllJobs(db) {
     holdsExpired: await holdExpiry(db),
     holdWarnings: await holdExpiryWarnings(db),
     registrationsClosed: await closeRegistrations(db),
+    recruitmentsClosed: await closeExpiredRecruitments(db),
     eventsCompleted: await completeEvents(db),
     noShows: await markNoShows(db),
     reminders: await sendReminders(db),

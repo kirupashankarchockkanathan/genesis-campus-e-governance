@@ -4,9 +4,10 @@ import { requireAuth, requireClubPermission, requirePlatformRole } from '../../s
 import { TEST_PASSWORD } from '../factories/index.js';
 
 /** Test app with probe routes used by the RBAC suites. */
-export function buildTestApp(db) {
+export function buildTestApp(db, { llm } = {}) {
   return createApp({
     db,
+    llm,
     extraRoutes: (api) => {
       api.get(
         '/_probe/club/:clubId/:permission',

@@ -12,6 +12,8 @@ export const FIELD_TYPES = Object.freeze([
   'multi_choice',
   'date',
   'consent',
+  'file_upload',
+  'team',
 ]);
 export const CHOICE_TYPES = Object.freeze(['single_choice', 'dropdown', 'multi_choice']);
 export const FIELD_TYPE_LABELS = Object.freeze({
@@ -25,6 +27,8 @@ export const FIELD_TYPE_LABELS = Object.freeze({
   multi_choice: 'Multiple choice',
   date: 'Date',
   consent: 'Consent checkbox',
+  file_upload: 'File upload',
+  team: 'Team (name and members)',
 });
 
 // FR-FORM-04: filled from the profile, shown read-only, never asked again.
@@ -138,6 +142,28 @@ export function validateAnswers(fields, answers = {}) {
       case 'consent':
         value[f.id] = true;
         break;
+      case 'file_upload':
+        // Files are uploaded first (POST /uploads/form-file); the answer is the returned URL.
+        if (typeof v !== 'string' || !/^\/uploads\/[A-Za-z0-9_.-]+$/.test(v))
+          errors[f.id] = 'Upload a file first';
+        else value[f.id] = v;
+        break;
+      case 'team': {
+        // FR-REG-08: team name plus members by college email. The API also checks the members exist.
+        const size = f.max ?? 4;
+        const members = Array.isArray(v?.members)
+          ? v.members.map((m) => String(m).trim().toLowerCase()).filter(Boolean)
+          : [];
+        const name = typeof v?.teamName === 'string' ? v.teamName.trim() : '';
+        if (name.length < 2 || name.length > 60) errors[f.id] = 'Enter a team name (2 to 60 characters)';
+        else if (members.length > size - 1)
+          errors[f.id] = `A team can have at most ${size} people including you`;
+        else if (new Set(members).size !== members.length) errors[f.id] = 'Each member can be listed once';
+        else if (members.some((m) => !z.string().email().safeParse(m).success))
+          errors[f.id] = 'Enter valid college emails for the members';
+        else value[f.id] = { teamName: name, members };
+        break;
+      }
       default:
         errors[f.id] = 'Unsupported field';
     }

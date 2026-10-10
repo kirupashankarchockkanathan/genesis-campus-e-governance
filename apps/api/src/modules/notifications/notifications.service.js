@@ -10,6 +10,9 @@ import { clock } from '../../lib/clock.js';
 import { errors } from '../../lib/errors.js';
 import { boolFromDb, boolToDb, isUniqueViolation, jsonFromDb, jsonToDb, toDb } from '../../db/helpers.js';
 import { publish } from './hub.js';
+import { config } from '../../config/index.js';
+import { sendMail } from '../../lib/mailer.js';
+import { logger } from '../../lib/logger.js';
 
 export const notificationDto = (r) => ({
   id: r.id,
@@ -80,7 +83,29 @@ export async function notify(
   // Push after the rows exist. Inside a transaction the push is slightly early, which is harmless:
   // the client only uses it to show a toast and bump the badge.
   for (const row of created) publish(row.user_id, notificationDto(row));
+  await emailCopies(db, category, created);
   return created;
+}
+
+/** Email copies for users who switched email on for the category (FR-NOTIF-05, Phase 2). Failures never break the caller. */
+async function emailCopies(db, category, rows) {
+  if (!rows.length) return;
+  const wanted = await db('notification_preferences as p')
+    .join('users as u', 'u.id', 'p.user_id')
+    .whereIn(
+      'p.user_id',
+      rows.map((r) => r.user_id),
+    )
+    .where({ 'p.category': category, 'p.email': boolToDb(true) })
+    .select('u.id', 'u.email');
+  for (const w of wanted) {
+    const row = rows.find((r) => r.user_id === w.id);
+    const route = jsonFromDb(row.data_json, {})?.route;
+    const link = route ? `\n\n${config.WEB_URL}${route}` : '';
+    sendMail({ to: w.email, subject: row.title, text: `${row.body}${link}` }).catch((err) =>
+      logger.warn({ err }, 'notification email failed'),
+    );
+  }
 }
 
 // ---------- Audiences ----------

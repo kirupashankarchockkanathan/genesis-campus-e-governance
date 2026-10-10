@@ -53,16 +53,14 @@ contentRouter.post(
   requireClubPermission(PERMISSIONS.ANNOUNCEMENT_POST, clubIdOf),
   validate({ body: announcementSchema }),
   wrap(async (req, res) =>
-    res
-      .status(201)
-      .json({
-        data: await ann.postAnnouncement(
-          db(req),
-          { ...req.actor, fullName: req.user.full_name },
-          req.clubId,
-          req.body,
-        ),
-      }),
+    res.status(201).json({
+      data: await ann.postAnnouncement(
+        db(req),
+        { ...req.actor, fullName: req.user.full_name },
+        req.clubId,
+        req.body,
+      ),
+    }),
   ),
 );
 contentRouter.patch(

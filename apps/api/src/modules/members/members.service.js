@@ -4,6 +4,7 @@ import { clock } from '../../lib/clock.js';
 import { errors } from '../../lib/errors.js';
 import { audit } from '../../lib/audit.js';
 import { toDb } from '../../db/helpers.js';
+import { notify } from '../notifications/notifications.service.js';
 
 const roleByKey = (trx, clubId, key) => trx('club_roles').where({ club_id: clubId, key }).first();
 
@@ -73,6 +74,55 @@ export async function addMember(db, actor, clubId, { email, roleKey = CLUB_ROLES
   });
 }
 
+/**
+ * Creates (or re-activates) a membership inside the caller's transaction and tells the student.
+ * Used when a recruitment application is accepted (FR-REC-05, TC-REC-04).
+ */
+export async function ensureMembership(
+  trx,
+  { clubId, userId, roleKey = CLUB_ROLES.MEMBER, addedVia = MEMBER_ADDED_VIA.RECRUITMENT },
+) {
+  if (roleKey === CLUB_ROLES.LEADER)
+    throw errors.forbidden('Leadership changes only through leadership transfer.');
+  const role = await roleByKey(trx, clubId, roleKey);
+  if (!role) throw errors.validation('Unknown club role.');
+  const now = toDb(clock.now());
+  const existing = await trx('club_members').where({ club_id: clubId, user_id: userId }).first();
+  if (existing?.status === MEMBER_STATUS.ACTIVE)
+    throw errors.conflict('That student is already a member of this club.');
+  if (existing) {
+    await trx('club_members').where({ id: existing.id }).update({
+      status: 'active',
+      club_role_id: role.id,
+      left_at: null,
+      joined_at: now,
+      added_via: addedVia,
+      updated_at: now,
+    });
+  } else {
+    await trx('club_members').insert({
+      id: newId(),
+      club_id: clubId,
+      user_id: userId,
+      club_role_id: role.id,
+      status: 'active',
+      joined_at: now,
+      added_via: addedVia,
+      created_at: now,
+      updated_at: now,
+    });
+  }
+  const club = await trx('clubs').where({ id: clubId }).first();
+  await notify(trx, {
+    userIds: [userId],
+    type: 'membership.added',
+    title: `Welcome to ${club.name}`,
+    body: `You are now a member of ${club.name} as ${role.name}.`,
+    route: '/my-clubs',
+  });
+  return role;
+}
+
 async function activeMembership(trx, clubId, userId) {
   return trx('club_members as m')
     .join('club_roles as r', 'r.id', 'm.club_role_id')
@@ -99,6 +149,13 @@ export async function changeRole(db, actor, clubId, userId, roleKey) {
       entityType: 'club',
       entityId: clubId,
       meta: { userId, from: m.role_key, to: roleKey },
+    });
+    await notify(trx, {
+      userIds: [userId],
+      type: 'role.changed',
+      title: 'Your club role changed',
+      body: `Your role is now ${role.name}.`,
+      route: `/club/${clubId}/members`,
     });
     return { userId, roleKey };
   });

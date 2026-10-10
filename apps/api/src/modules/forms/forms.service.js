@@ -3,7 +3,7 @@ import { newId } from '../../lib/ids.js';
 import { clock } from '../../lib/clock.js';
 import { errors } from '../../lib/errors.js';
 import { audit } from '../../lib/audit.js';
-import { jsonFromDb, jsonToDb, toDb } from '../../db/helpers.js';
+import { boolFromDb, boolToDb, jsonFromDb, jsonToDb, toDb } from '../../db/helpers.js';
 import { activeBookingFor } from '../bookings/bookings.service.js';
 
 export const formDto = (f) => ({
@@ -16,6 +16,7 @@ export const formDto = (f) => ({
   opensAt: f.opens_at,
   closesAt: f.closes_at,
   publishedAt: f.published_at,
+  waitlistEnabled: boolFromDb(f.waitlist_enabled),
 });
 
 export const getFormRow = (db, eventId) => db('forms').where({ event_id: eventId }).first();
@@ -75,7 +76,7 @@ export async function duplicateForm(db, actor, event, fromEventId) {
 }
 
 /** FR-FORM-06: publish after approval; seat limit defaults to the held hall's capacity (spec 5.3 rule 4). */
-export async function publishForm(db, actor, event, { maxSeats, closesAt } = {}) {
+export async function publishForm(db, actor, event, { maxSeats, closesAt, waitlist } = {}) {
   return db.transaction(async (trx) => {
     const e = await trx('events').where({ id: event.id }).first();
     if (e.status !== EVENT_STATUS.APPROVED || !e.circulated_at) {
@@ -134,6 +135,7 @@ export async function publishForm(db, actor, event, { maxSeats, closesAt } = {})
         opens_at: now,
         closes_at: closes,
         published_at: now,
+        waitlist_enabled: boolToDb(Boolean(waitlist)),
         updated_at: now,
       });
     await audit(trx, {

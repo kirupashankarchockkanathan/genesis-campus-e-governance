@@ -91,6 +91,7 @@ export const hallDecisionSchema = z.object({
 // ---- Registration ----
 export const registerSchema = z.object({ answers: z.record(z.any()).optional().default({}) });
 export const publishRegistrationSchema = z.object({
+  waitlist: z.boolean().optional(),
   maxSeats: z.coerce.number().int().min(1).optional(),
   closesAt: isoDate.optional(),
 });

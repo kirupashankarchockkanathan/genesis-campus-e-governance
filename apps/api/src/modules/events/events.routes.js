@@ -32,6 +32,7 @@ import * as events from './events.service.js';
 import * as forms from '../forms/forms.service.js';
 import * as regs from '../registrations/registrations.service.js';
 import * as bookings from '../bookings/bookings.service.js';
+import { myApplications } from '../recruitment/recruitment.service.js';
 
 const wrap = (fn) => (req, res, next) => fn(req, res).catch(next);
 const db = (req) => req.app.locals.db ?? getDb();
@@ -318,7 +319,12 @@ eventsRouter.get(
   auth,
   wrap(async (req, res) => {
     const scope = ['current', 'past'].includes(String(req.query.scope)) ? String(req.query.scope) : 'all';
-    res.json({ data: await regs.myActivities(db(req), req.user.id, scope) });
+    res.json({
+      data: {
+        ...(await regs.myActivities(db(req), req.user.id, scope)),
+        applications: await myApplications(db(req), req.user.id),
+      },
+    });
   }),
 );
 

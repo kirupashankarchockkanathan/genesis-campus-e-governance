@@ -9,12 +9,14 @@ import {
 import { newId, randomToken } from '../../lib/ids.js';
 import { clock } from '../../lib/clock.js';
 import { AppError, errors } from '../../lib/errors.js';
-import { jsonFromDb, jsonToDb, toDb } from '../../db/helpers.js';
+import { boolFromDb, jsonFromDb, jsonToDb, toDb } from '../../db/helpers.js';
 import { toCsv } from '../../lib/csv.js';
 import { notify } from '../notifications/notifications.service.js';
 import { formDto } from '../forms/forms.service.js';
 
 const HOLDING = [REGISTRATION_STATUS.REGISTERED, REGISTRATION_STATUS.ATTENDED];
+// A waitlisted student also blocks a second registration attempt.
+const BLOCKING = [...HOLDING, REGISTRATION_STATUS.WAITLISTED];
 
 export const registrationDto = (r) => ({
   id: r.id,
@@ -54,7 +56,7 @@ export async function register(db, user, eventId, answers) {
       throw new AppError(ERROR_CODES.REGISTRATION_CLOSED, 'Registration is not open for this event.');
     }
     const existing = await trx('registrations').where({ event_id: e.id, user_id: user.id }).first();
-    if (existing && HOLDING.includes(existing.status)) {
+    if (existing && BLOCKING.includes(existing.status)) {
       throw new AppError(ERROR_CODES.ALREADY_REGISTERED, 'You are already registered for this event.', {
         registration: registrationDto(existing),
       });
@@ -67,9 +69,12 @@ export async function register(db, user, eventId, answers) {
         Object.entries(checked.errors).map(([path, message]) => ({ path, message })),
       );
     }
-    if (e.max_seats !== null && (await seatCount(trx, e.id)) >= Number(e.max_seats)) {
+    await checkTeamMembers(trx, fields, checked.value, user);
+    // When the seat limit is reached the student is told so (SEATS_FULL), or joins the waitlist if the club enabled it.
+    const full = e.max_seats !== null && (await seatCount(trx, e.id)) >= Number(e.max_seats);
+    if (full && !boolFromDb(form.waitlist_enabled))
       throw new AppError(ERROR_CODES.SEATS_FULL, 'This event is full.');
-    }
+    const status = full ? REGISTRATION_STATUS.WAITLISTED : REGISTRATION_STATUS.REGISTERED;
 
     // One response per (form, user): a student who cancelled and returns replaces the old answers.
     if (existing) await trx('registrations').where({ id: existing.id }).update({ form_response_id: null });
@@ -89,7 +94,7 @@ export async function register(db, user, eventId, answers) {
       await trx('registrations')
         .where({ id })
         .update({
-          status: REGISTRATION_STATUS.REGISTERED,
+          status,
           form_response_id: responseId,
           qr_token: randomToken(24),
           cancelled_at: null,
@@ -104,7 +109,7 @@ export async function register(db, user, eventId, answers) {
         event_id: e.id,
         user_id: user.id,
         form_response_id: responseId,
-        status: REGISTRATION_STATUS.REGISTERED,
+        status,
         qr_token: randomToken(24),
         created_at: now,
         updated_at: now,
@@ -113,8 +118,10 @@ export async function register(db, user, eventId, answers) {
     await notify(trx, {
       userIds: [user.id],
       type: 'registration.confirmed',
-      title: 'Registration confirmed',
-      body: `You are registered for "${e.title}". Your QR ticket is on the event page.`,
+      title: full ? 'You are on the waitlist' : 'Registration confirmed',
+      body: full
+        ? `"${e.title}" is full. You will be registered automatically if a seat opens up.`
+        : `You are registered for "${e.title}". Your QR ticket is on the event page.`,
       route: `/events/${e.id}`,
     });
     return registrationDto(await trx('registrations').where({ id }).first());
@@ -126,17 +133,65 @@ export async function cancelRegistration(db, user, eventId) {
   const e = await db('events').where({ id: eventId }).first();
   if (!e) throw errors.notFound('Event not found.');
   const r = await db('registrations').where({ event_id: eventId, user_id: user.id }).first();
-  if (!r || r.status !== REGISTRATION_STATUS.REGISTERED)
+  if (!r || ![REGISTRATION_STATUS.REGISTERED, REGISTRATION_STATUS.WAITLISTED].includes(r.status))
     throw errors.notFound('You have no active registration for this event.');
   if (e.starts_at <= toDb(clock.now()))
     throw errors.invalidState(
       'The event has already started, so the registration can no longer be cancelled.',
     );
   const now = toDb(clock.now());
-  await db('registrations')
-    .where({ id: r.id })
-    .update({ status: REGISTRATION_STATUS.CANCELLED, cancelled_at: now, updated_at: now });
+  await db.transaction(async (trx) => {
+    await trx('registrations')
+      .where({ id: r.id })
+      .update({ status: REGISTRATION_STATUS.CANCELLED, cancelled_at: now, updated_at: now });
+    if (r.status === REGISTRATION_STATUS.REGISTERED) await promoteFromWaitlist(trx, e);
+  });
   return registrationDto(await db('registrations').where({ id: r.id }).first());
+}
+
+/** A freed seat goes to the earliest waitlisted student, who is told at once (FR-REG-03, Phase 2). */
+async function promoteFromWaitlist(trx, event) {
+  if (event.max_seats !== null && (await seatCount(trx, event.id)) >= Number(event.max_seats)) return;
+  const next = await trx('registrations')
+    .where({ event_id: event.id, status: REGISTRATION_STATUS.WAITLISTED })
+    .orderBy('created_at')
+    .first();
+  if (!next) return;
+  await trx('registrations')
+    .where({ id: next.id })
+    .update({ status: REGISTRATION_STATUS.REGISTERED, updated_at: toDb(clock.now()) });
+  await notify(trx, {
+    userIds: [next.user_id],
+    type: 'registration.confirmed',
+    title: 'A seat opened up',
+    body: `You are now registered for "${event.title}". Your QR ticket is on the event page.`,
+    route: `/events/${event.id}`,
+  });
+}
+
+/** Team members must be real student accounts (FR-REG-08); the registrant is added implicitly. */
+async function checkTeamMembers(trx, fields, answers, user) {
+  for (const f of fields.filter((x) => x.type === 'team')) {
+    const t = answers[f.id];
+    if (!t) continue;
+    const emails = t.members;
+    if (emails.includes(user.email)) {
+      throw errors.validation('List only your teammates, not yourself.', [
+        { path: f.id, message: 'Remove your own email' },
+      ]);
+    }
+    if (!emails.length) continue;
+    const found = await trx('users')
+      .whereIn('email', emails)
+      .where({ status: 'active', platform_role: 'student' })
+      .pluck('email');
+    const missing = emails.filter((m) => !found.includes(m));
+    if (missing.length) {
+      throw errors.validation(`No student account found for: ${missing.join(', ')}.`, [
+        { path: f.id, message: `Unknown member: ${missing.join(', ')}` },
+      ]);
+    }
+  }
 }
 
 /** GET /me/registrations/:eventId/ticket: only the owner can read the QR token (TC-RBAC-15). */
@@ -146,7 +201,8 @@ export async function getTicket(db, user, eventId) {
     .where({ 'r.event_id': eventId, 'r.user_id': user.id })
     .select('r.*', 'e.title', 'e.starts_at')
     .first();
-  if (!r || r.status === REGISTRATION_STATUS.CANCELLED) throw errors.notFound('No ticket for this event.');
+  // Only a confirmed seat gets a ticket; waitlisted and cancelled registrations do not.
+  if (!r || !HOLDING.includes(r.status)) throw errors.notFound('No ticket for this event.');
   return { ...registrationDto(r), qrToken: r.qr_token, eventTitle: r.title, startsAt: r.starts_at };
 }
 
@@ -187,6 +243,10 @@ export async function listRegistrations(db, event, { canViewAnswers }) {
     ),
     attended: Number(
       (await db('registrations').where({ event_id: event.id, status: 'attended' }).count('* as c').first()).c,
+    ),
+    waitlisted: Number(
+      (await db('registrations').where({ event_id: event.id, status: 'waitlisted' }).count('* as c').first())
+        .c,
     ),
     maxSeats: event.max_seats === null ? null : Number(event.max_seats),
     expected: Number(event.expected_participants),
@@ -252,14 +312,12 @@ export async function checkIn(db, actor, event, qrToken) {
     throw errors.conflict(`${r.full_name} is already checked in.`, { checkedInAt: r.checked_in_at });
   }
   const now = toDb(clock.now());
-  await db('registrations')
-    .where({ id: r.id })
-    .update({
-      status: REGISTRATION_STATUS.ATTENDED,
-      checked_in_at: now,
-      checked_in_by: actor.id,
-      updated_at: now,
-    });
+  await db('registrations').where({ id: r.id }).update({
+    status: REGISTRATION_STATUS.ATTENDED,
+    checked_in_at: now,
+    checked_in_by: actor.id,
+    updated_at: now,
+  });
   return { registrationId: r.id, fullName: r.full_name, rollNumber: r.roll_number, checkedInAt: now };
 }
 
@@ -287,10 +345,14 @@ export async function myActivities(db, userId, scope) {
           ? 'Attended'
           : r.status === 'cancelled'
             ? 'Cancelled'
-            : 'Registered',
+            : r.status === 'waitlisted'
+              ? 'Waitlisted'
+              : 'Registered',
   }));
   const upcoming = (r) =>
-    r.status === 'registered' && r.endsAt >= now && !['cancelled', 'rejected'].includes(r.eventStatus);
+    ['registered', 'waitlisted'].includes(r.status) &&
+    r.endsAt >= now &&
+    !['cancelled', 'rejected'].includes(r.eventStatus);
   if (scope === 'current') return { registrations: mapped.filter(upcoming) };
   if (scope === 'past')
     return { registrations: mapped.filter((r) => !upcoming(r) && r.status !== 'cancelled') };

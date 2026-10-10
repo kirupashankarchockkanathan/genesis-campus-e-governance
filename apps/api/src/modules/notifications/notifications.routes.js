@@ -43,7 +43,8 @@ notificationsRouter.get(
     });
     res.flushHeaders();
     res.write(': connected\n\n');
-    const send = (n) => res.write(`event: notification\ndata: ${JSON.stringify(n)}\n\n`);
+    const send = (data, event = 'notification') =>
+      res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
     const unsubscribe = subscribe(payload.sub, send);
     const heartbeat = setInterval(() => res.write(': heartbeat\n\n'), 25_000);
     req.on('close', () => {

@@ -18,6 +18,13 @@ export async function createTestDb() {
 }
 
 export const TABLES_IN_CLEAN_ORDER = [
+  'chat_messages',
+  'message_reports',
+  'discussion_messages',
+  'discussions',
+  'applications',
+  'recruitment_positions',
+  'recruitments',
   'notification_preferences',
   'notifications',
   'hall_bookings',
