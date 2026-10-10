@@ -11,7 +11,10 @@ export const signAccessToken = (user) =>
 
 export function verifyAccessToken(token) {
   try {
-    return jwt.verify(token, config.JWT_SECRET, { algorithms: ['HS256'] });
+    const payload = jwt.verify(token, config.JWT_SECRET, { algorithms: ['HS256'] });
+    // Tokens for other purposes (event stream, calendar feed) share the secret but must never act as a login.
+    if (payload.purpose || !payload.platformRole) throw new Error('not an access token');
+    return payload;
   } catch {
     throw errors.unauthenticated('Your session has expired. Please log in again.');
   }

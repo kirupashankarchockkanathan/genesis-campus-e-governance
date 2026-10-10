@@ -89,7 +89,7 @@ dd {
   cursor: pointer;
 }
 .star.on {
-  color: var(--brand);
+  color: var(--brand-text);
   border-color: var(--brand);
   background: var(--tint);
 }
@@ -103,7 +103,7 @@ dd {
 .brand-inline {
   font-family: var(--font-display);
   font-size: 1.4rem;
-  color: var(--brand);
+  color: var(--brand-text);
   text-decoration: none;
 }
 
@@ -152,7 +152,7 @@ dd {
   min-height: 44px;
 }
 .tab[aria-selected='true'] {
-  color: var(--brand);
+  color: var(--brand-text);
   border-bottom-color: var(--brand);
 }
 .tab[aria-disabled='true'] {
@@ -726,7 +726,7 @@ dd {
 }
 .portal-hero h1 {
   font-size: clamp(2rem, 5vw, 3.2rem);
-  color: var(--brand);
+  color: var(--brand-text);
 }
 .portal-hero p {
   max-width: 56ch;

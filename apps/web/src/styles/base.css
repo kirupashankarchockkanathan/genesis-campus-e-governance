@@ -32,7 +32,7 @@ p {
   margin: 0;
 }
 a {
-  color: var(--brand);
+  color: var(--brand-text);
 }
 img {
   max-width: 100%;

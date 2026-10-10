@@ -18,7 +18,7 @@
 }
 .portal-hero h1 {
   font-size: clamp(2rem, 5vw, 3.2rem);
-  color: var(--brand);
+  color: var(--brand-text);
 }
 .portal-hero p {
   max-width: 56ch;
@@ -175,7 +175,7 @@
   place-items: center;
   font-family: var(--font-display);
   background: var(--surface);
-  color: var(--brand);
+  color: var(--brand-text);
   border: 4px solid var(--surface);
   box-shadow: var(--e2);
 }
@@ -229,7 +229,7 @@
   text-decoration: none;
 }
 .club-card-body h2 a:hover {
-  color: var(--brand);
+  color: var(--brand-text);
 }
 .club-blurb {
   color: var(--ink-2);
@@ -287,7 +287,7 @@
 }
 .hero-stats strong {
   font-size: 1.5rem;
-  color: var(--brand);
+  color: var(--brand-text);
 }
 .club-hero-actions {
   display: flex;
@@ -318,7 +318,7 @@
   place-items: center;
   border-radius: var(--r-md);
   background: var(--tint);
-  color: var(--brand);
+  color: var(--brand-text);
   font-size: 1.4rem;
 }
 @media (max-width: 700px) {
@@ -378,7 +378,7 @@
   right: var(--s3);
   top: var(--s3);
   background: var(--surface);
-  color: var(--brand);
+  color: var(--brand-text);
   font-weight: 700;
   font-size: 0.75rem;
   padding: 4px var(--s3);
@@ -402,7 +402,7 @@
 .date-badge-day {
   font-family: var(--font-display);
   font-size: 1.8rem;
-  color: var(--brand);
+  color: var(--brand-text);
 }
 .date-badge-month {
   font-size: 0.75rem;
@@ -427,7 +427,7 @@
   padding: var(--s5);
 }
 .event-club {
-  color: var(--brand);
+  color: var(--brand-text);
   font-weight: 700;
   font-size: 0.85rem;
   text-transform: uppercase;
@@ -442,7 +442,7 @@
   text-decoration: none;
 }
 .event-body h2 a:hover {
-  color: var(--brand);
+  color: var(--brand-text);
 }
 .event-summary {
   color: var(--ink-2);
@@ -537,7 +537,7 @@
 }
 .fact-tiles li > svg {
   flex: none;
-  color: var(--brand);
+  color: var(--brand-text);
   margin-top: 2px;
 }
 .fact-tiles li > span {

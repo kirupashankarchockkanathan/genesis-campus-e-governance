@@ -29,7 +29,7 @@
 }
 .btn-secondary {
   background: var(--surface);
-  color: var(--brand);
+  color: var(--brand-text);
   border-color: var(--brand);
 }
 .btn-secondary:hover:not(:disabled) {
@@ -45,7 +45,7 @@
 }
 .btn-link {
   background: none;
-  color: var(--brand);
+  color: var(--brand-text);
   text-decoration: underline;
   min-height: 0;
   padding: 0;
@@ -160,7 +160,7 @@
   height: 44px;
   border-radius: var(--r-md);
   background: var(--tint);
-  color: var(--brand);
+  color: var(--brand-text);
   font-weight: 700;
 }
 

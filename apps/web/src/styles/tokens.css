@@ -1,6 +1,7 @@
 /* Design tokens: red and white theme (spec 13.1). Never write a raw colour in a component. */
 :root {
   --brand: #b01227;
+  --brand-text: #b01227; /* red used for text and links: lighter in the dark theme to keep 4.5:1 */
   --brand-hover: color-mix(in srgb, var(--brand), #000 14%);
   --on-brand: #ffffff;
   --accent: #b01227;
@@ -49,6 +50,7 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     --brand: #c72c43;
+    --brand-text: #ff8e9c;
     --accent: #ff8e9c;
     --bg: #140d0e;
     --surface: #1e1416;
@@ -73,6 +75,7 @@
 }
 :root[data-theme='dark'] {
   --brand: #c72c43;
+  --brand-text: #ff8e9c;
   --accent: #ff8e9c;
   --bg: #140d0e;
   --surface: #1e1416;
