@@ -1,10 +1,14 @@
 # Project context and progress
 
-Last updated: 11 October 2026. Read this first to see what is done, what is next and what to be careful about.
+Last updated: 11 October 2026 (Amrita UI integration, branch `feature/amrita-frontend`). Read this first to see what is done, what is next and what to be careful about.
 
 ## What this is
 
 Campus Clubs Portal, built to `docs/PROJECT_SPEC.md` (version 1.0). React + Vite, Express, Knex (SQLite local, PostgreSQL hosted), own authentication, red and white theme, Claude-powered assistant.
+
+## Latest change: Amrita UI on the real backend
+
+The team's supplied GENESIS Campus Connect frontend now runs in `apps/web`, unchanged in design, on a new server-authoritative `gov` module (see decisions D40 to D50 and the README checklist "Amrita UI integration"). Tests: shared 25, API 203, web 14, end-to-end 16, lint clean. Not verified: PostgreSQL, GitHub Actions, live Claude, real email.
 
 ## Git state
 

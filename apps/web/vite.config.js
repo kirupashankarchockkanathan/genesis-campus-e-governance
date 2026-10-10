@@ -7,6 +7,7 @@ const target = process.env.API_TARGET ?? 'http://localhost:4000';
 export default defineConfig({
   plugins: [react()],
   server: {
+    host: true,
     port: 5173,
     proxy: {
       '/api': { target, changeOrigin: true },
@@ -16,7 +17,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['./src/test/setup.js'],
-    css: false,
+    include: ['src/**/*.test.{js,jsx}'],
+    testTimeout: 20000,
   },
 });

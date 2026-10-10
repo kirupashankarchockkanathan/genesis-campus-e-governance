@@ -1,11 +1,13 @@
-import { Button } from '../components/ui/Button.jsx';
-import { EmptyState } from '../components/ui/EmptyState.jsx';
+import { Link } from 'react-router-dom';
+import AuthShell from '../components/AuthShell';
 
-export const NotFound = () => (
-  <div className="content">
-    <EmptyState title="Page not found">The page you are looking for does not exist.</EmptyState>
-    <div className="center">
-      <Button to="/">Back to home</Button>
-    </div>
-  </div>
-);
+export default function NotFound() {
+  return (
+    <AuthShell>
+      <div className="eyebrow">404</div>
+      <h1 className="mt-2 text-4xl font-extrabold text-brand-900">That page wandered off.</h1>
+      <p className="mt-2 text-sm text-ink-soft">The page you're looking for doesn't exist in this prototype.</p>
+      <Link to="/" className="btn-primary mt-6 inline-flex">Back to start</Link>
+    </AuthShell>
+  );
+}

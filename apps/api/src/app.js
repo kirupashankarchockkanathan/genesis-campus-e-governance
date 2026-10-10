@@ -15,6 +15,7 @@ import { contentRouter } from './modules/content/content.routes.js';
 import { notificationsRouter } from './modules/notifications/notifications.routes.js';
 import { engagementRouter } from './modules/engagement/engagement.routes.js';
 import { chatRouter } from './modules/chat/chat.routes.js';
+import { aiRouter, govRouter } from './modules/gov/gov.routes.js';
 import { uploadDir } from './lib/storage.js';
 
 /**
@@ -30,6 +31,8 @@ export function createApp({ db = getDb(), extraRoutes, llm } = {}) {
   app.use(requestId);
   app.use(helmet());
   app.use(cors({ origin: config.WEB_URL, credentials: true }));
+  // Event requests carry a poster image as a data URL, so the governance routes accept a larger body.
+  app.use('/api/v1/gov', express.json({ limit: '2mb' }));
   app.use(express.json({ limit: '100kb' }));
   app.use(cookieParser());
 
@@ -61,6 +64,8 @@ export function createApp({ db = getDb(), extraRoutes, llm } = {}) {
   api.use('/', notificationsRouter);
   api.use('/', engagementRouter);
   api.use('/', chatRouter);
+  api.use('/gov', govRouter);
+  api.use('/ai', aiRouter);
   if (extraRoutes) extraRoutes(api);
   app.use('/api/v1', api);
 

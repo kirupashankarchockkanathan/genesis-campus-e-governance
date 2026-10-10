@@ -1,27 +1,22 @@
-import { StrictMode } from 'react';
-import { createRoot } from 'react-dom/client';
-import './styles/tokens.css';
-import './styles/base.css';
-import './styles/utilities.css';
-import './styles/components.css';
-import './styles/layout.css';
-import './styles/features.css';
-import './styles/showcase.css';
-import { Providers } from './app/providers.jsx';
-import { AppRoutes } from './app/router.jsx';
-import { initTheme } from './components/layout/ThemeToggle.jsx';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
+import { AuthProvider } from './context/AuthContext';
+import { AppProvider } from './context/AppContext';
+import { GovProvider } from './context/GovContext';
+import './index.css';
 
-initTheme();
-
-// PWA: installable and offline app shell (Phase 3). Only in production builds.
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
-}
-
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <Providers>
-      <AppRoutes />
-    </Providers>
-  </StrictMode>,
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <AuthProvider>
+        <GovProvider>
+          <AppProvider>
+            <App />
+          </AppProvider>
+        </GovProvider>
+      </AuthProvider>
+    </BrowserRouter>
+  </React.StrictMode>,
 );

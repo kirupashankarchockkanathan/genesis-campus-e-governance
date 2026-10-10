@@ -1,0 +1,160 @@
+// An in-memory stand-in for the portal API, used by the screen tests so they run offline. It runs the real shared
+// workflow engine and the real per-portal views, so a screen test exercises the same rules the server enforces.
+import { DEMO_STUDENT_STATE, DEMO_USERS, createSeedState, selectors, workflow } from '@ccp/shared/gov';
+import { viewFor } from '../../../api/src/modules/gov/views.js';
+
+const json = (data, status = 200) => ({
+  ok: status < 400,
+  status,
+  json: async () => (status < 400 ? { data } : { error: data }),
+});
+const fail = (status, code, message) => json({ code, message }, status);
+
+export function createFakeServer() {
+  let state = createSeedState();
+  let current = null;
+  const students = {};
+  const regs = {};
+  const sessions = new Map(); // token -> { user, portal }
+
+  const portalOf = (u) => (u.role === 'admin' ? u.adminType : u.role);
+  const actorOf = ({ password: _p, ...u }) => u;
+  const studentOf = (id) => (students[id] ??= structuredClone(DEMO_STUDENT_STATE));
+  const counts = () => {
+    const c = {};
+    Object.values(regs).forEach((list) =>
+      list.forEach((e) => {
+        c[e] = (c[e] || 0) + 1;
+      }),
+    );
+    return c;
+  };
+  const view = (portal, actor) =>
+    viewFor({ ...state, registrationCounts: counts() }, portal, { clubId: actor.clubId });
+
+  async function handle(url, init = {}) {
+    const method = init.method ?? 'GET';
+    const path = url.replace(/^.*\/api\/v1/, '').split('?')[0];
+    const headers = init.headers ?? {};
+    const body = init.body ? JSON.parse(init.body) : {};
+    if (path === '/auth/login') {
+      const u = DEMO_USERS.find(
+        (d) =>
+          d.userId.toLowerCase() === body.identifier.toLowerCase() &&
+          d.password === body.password &&
+          portalOf(d) === body.portal,
+      );
+      if (!u) return fail(401, 'UNAUTHENTICATED', 'Invalid User ID or password for the selected role.');
+      const token = `tok-${u.userId}`;
+      sessions.set(token, { user: u, portal: portalOf(u) });
+      current = token;
+      return json({ accessToken: token, user: { id: u.userId } });
+    }
+    if (path === '/auth/refresh')
+      return current
+        ? json({ accessToken: current })
+        : fail(401, 'UNAUTHENTICATED', 'Please log in to continue.');
+    if (path === '/auth/logout') {
+      current = null;
+      return json({ loggedOut: true });
+    }
+    const token = (headers.Authorization ?? '').replace('Bearer ', '');
+    const session = sessions.get(token);
+    if (!session) return fail(401, 'UNAUTHENTICATED', 'Please log in to continue.');
+    const actor = actorOf(session.user);
+    if (path === '/gov/me') return json({ user: { ...actor, id: actor.userId } });
+    if (path === '/gov/state') return json(view(session.portal, actor));
+    if (path.startsWith('/gov/actions/')) {
+      const name = path.split('/').pop();
+      const res = workflow[name](state, actor, ...body.args);
+      if (res.ok) state = res.state;
+      const { ok, error, state: _s, ...extra } = res;
+      return json({ ok, error: ok ? undefined : error, extra, state: view(session.portal, actor) });
+    }
+    if (path === '/gov/reset') {
+      state = createSeedState();
+      return json({ reset: true });
+    }
+    if (path.startsWith('/gov/student')) {
+      const mine = studentOf(actor.userId);
+      const list = (regs[actor.userId] ??= DEMO_STUDENT_STATE.registrations.map((r) => r.eventId));
+      const reply = () => {
+        const known = new Set(mine.notifications.map((n) => n.id));
+        mine.notifications = [...state.broadcasts.filter((b) => !known.has(b.id)), ...mine.notifications]; // the server merges portal-wide notices
+        return shape();
+      };
+      const shape = () => ({
+        ...mine,
+        registrations: list.map((eventId) => ({
+          eventId,
+          ref: '',
+          status: 'confirmed',
+          registeredOn: '2026-10-10',
+        })),
+      });
+      if (path === '/gov/student' && method === 'GET') return json(reply());
+      if (path === '/gov/student/registrations' && method === 'POST') {
+        const ev = selectors
+          .publishedEvents({ ...state, registrationCounts: counts() })
+          .find((e) => e.id === body.eventId);
+        if (!ev) return fail(404, 'NOT_FOUND', 'That event is not open to students.');
+        if (ev.status === 'full' || ev.status === 'closed')
+          return fail(409, 'INVALID_STATE', 'This event is fully booked.');
+        if (!list.includes(body.eventId)) list.push(body.eventId);
+        return json(reply(), 201);
+      }
+      if (path.startsWith('/gov/student/registrations/')) {
+        const id = decodeURIComponent(path.split('/').pop());
+        regs[actor.userId] = list.filter((e) => e !== id);
+        return json(reply());
+      }
+      if (path === '/gov/student/favorites') {
+        mine.favorites = mine.favorites.includes(body.clubId)
+          ? mine.favorites.filter((c) => c !== body.clubId)
+          : [...mine.favorites, body.clubId];
+        return json(reply());
+      }
+      if (path === '/gov/student/bookmarks') {
+        mine.bookmarks = mine.bookmarks.includes(body.eventId)
+          ? mine.bookmarks.filter((c) => c !== body.eventId)
+          : [...mine.bookmarks, body.eventId];
+        return json(reply());
+      }
+      if (path === '/gov/student/notifications/read') {
+        mine.notifications = mine.notifications.map((n) =>
+          body.all || n.id === body.id ? { ...n, unread: false } : n,
+        );
+        return json(reply());
+      }
+      if (path === '/gov/student/prefs') {
+        mine.prefs = body.prefs;
+        return json(reply());
+      }
+    }
+    return fail(404, 'NOT_FOUND', 'Not found');
+  }
+
+  /** Test shortcut: the person is already signed in (the app then restores the session like after a reload). */
+  const signIn = (userId) => {
+    const u = DEMO_USERS.find((d) => d.userId === userId);
+    const token = `tok-${u.userId}`;
+    sessions.set(token, { user: u, portal: portalOf(u) });
+    current = token;
+    return portalOf(u);
+  };
+
+  return {
+    handle,
+    signIn,
+    reset: () => {
+      state = createSeedState();
+      current = null;
+      sessions.clear();
+      Object.keys(students).forEach((k) => delete students[k]);
+      Object.keys(regs).forEach((k) => delete regs[k]);
+    },
+    get state() {
+      return state;
+    },
+  };
+}

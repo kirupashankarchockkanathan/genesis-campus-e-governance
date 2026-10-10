@@ -9,6 +9,7 @@ import { sendMail, verificationMail, resetMail } from '../../lib/mailer.js';
 import { signAccessToken } from '../../lib/tokens.js';
 import { isUniqueViolation, toDb } from '../../db/helpers.js';
 import { loginLimiter } from './loginLimiter.js';
+import { portalsOf } from '../gov/portal.js';
 
 const hours = (n) => n * 3600 * 1000;
 const days = (n) => n * 24 * 3600 * 1000;
@@ -165,8 +166,10 @@ export async function revokeAllSessions(db, userId) {
     .update({ revoked_at: toDb(clock.now()) });
 }
 
-export async function login(db, { identifier, password }, meta = {}) {
+export async function login(db, { identifier, password, portal }, meta = {}) {
   const key = `${identifier}|${meta.ip ?? ''}`;
+  // With a portal the message names the role and is the same for a wrong password and a wrong door.
+  const badLogin = portal ? 'Invalid User ID or password for the selected role.' : GENERIC_LOGIN_ERROR;
   const wait = loginLimiter.retryAfter(key);
   if (wait > 0) {
     const e = errors.rateLimited(
@@ -190,7 +193,12 @@ export async function login(db, { identifier, password }, meta = {}) {
         ip: meta.ip,
       });
     }
-    throw errors.unauthenticated(GENERIC_LOGIN_ERROR);
+    throw errors.unauthenticated(badLogin);
+  }
+  // Right password, wrong door (e.g. a student on the Administrator screen): same answer, and it counts as a failure.
+  if (portal && !(await portalsOf(db, user)).includes(portal)) {
+    loginLimiter.fail(key);
+    throw errors.unauthenticated(badLogin);
   }
   if (user.status !== USER_STATUS.ACTIVE)
     throw errors.forbidden('This account has been suspended. Contact the administrators.');

@@ -3,7 +3,6 @@ import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PASSWORDS } from './passwords.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const data = path.join(root, 'e2e', '.data');
@@ -20,18 +19,11 @@ const apiEnv = {
   DATABASE_CLIENT: 'sqlite3',
   SQLITE_FILE: '../../e2e/.data/e2e.sqlite',
   UPLOAD_DIR: '../../e2e/.data/uploads',
-  MAIL_OUTBOX_FILE: '../../e2e/.data/mail.jsonl',
   JWT_SECRET: 'e2e-secret-e2e-secret-e2e-secret-e2e-secret-1234',
   AUTO_VERIFY_EMAIL: 'true',
   BCRYPT_COST: '4',
   RATE_LIMIT_MAX: '10000',
-  MAX_ACTIVE_HOLDS_PER_CLUB: '50',
-  ALLOWED_EMAIL_DOMAINS: 'campus.example',
-  SEED_SAMPLE: 'true',
-  SEED_SAMPLE_PASSWORD: PASSWORDS.sample,
-  SEED_SUPER_ADMIN_PASSWORD: PASSWORDS.superAdmin,
-  SEED_OSI_PASSWORD: PASSWORDS.osi,
-  SEED_EVENTS_PASSWORD: PASSWORDS.events,
+  SEED_DEMO_PORTAL: 'true',
   ANTHROPIC_API_KEY: '',
 };
 
@@ -60,5 +52,5 @@ const stop = () => {
 };
 process.on('SIGINT', stop);
 process.on('SIGTERM', stop);
-api.on('exit', (c) => c && process.exit(c));
-web.on('exit', (c) => c && process.exit(c));
+api.on('exit', (code) => code && stop());
+web.on('exit', (code) => code && stop());

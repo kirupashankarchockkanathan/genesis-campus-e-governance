@@ -21,7 +21,7 @@ Rules:
 // Rate limit per user (spec 14 "Limits"): in memory, fine for one API instance.
 const recent = new Map();
 export const _resetChatLimit = () => recent.clear();
-function checkRate(userId) {
+export function checkRate(userId) {
   const now = clock.now().getTime();
   const list = (recent.get(userId) ?? []).filter((t) => t > now - 60_000);
   if (list.length >= config.CHAT_RATE_PER_MINUTE) {

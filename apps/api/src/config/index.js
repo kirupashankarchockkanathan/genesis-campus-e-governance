@@ -47,6 +47,8 @@ const schema = z.object({
   CHAT_TIMEOUT_MS: z.coerce.number().default(20000),
   CHAT_RATE_PER_MINUTE: z.coerce.number().default(20),
   SEED_SAMPLE: bool('false'),
+  // Demo sign-ins for the portal screens (STU2026001, CLUB001, OSA001, EVT001). Ignored in production.
+  SEED_DEMO_PORTAL: bool('true'),
   SEED_SAMPLE_PASSWORD: z.string().default(''),
   SEED_SUPER_ADMIN_EMAIL: z.string().default('superadmin@campus.example'),
   SEED_SUPER_ADMIN_PASSWORD: z.string().default(''),

@@ -4,3 +4,10 @@ coverage
 package-lock.json
 docs/PROJECT_SPEC.md
 *.docx
+apps/web/src/pages
+apps/web/src/components
+apps/web/src/data/mockData.js
+apps/web/src/services
+apps/web/src/index.css
+apps/web/src/test/ui.test.jsx
+apps/web/src/App.jsx

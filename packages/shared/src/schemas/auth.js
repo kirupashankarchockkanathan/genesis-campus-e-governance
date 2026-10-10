@@ -50,6 +50,8 @@ export const loginSchema = z.object({
     .max(254)
     .transform((v) => v.toLowerCase()),
   password: z.string().min(1).max(LIMITS.PASSWORD_MAX),
+  // The entry path chosen on the first screens. When given, the account must belong to that portal.
+  portal: z.enum(['student', 'club', 'osa', 'events']).optional(),
 });
 export const resetPasswordSchema = z.object({
   token: z.string().min(10).max(200),

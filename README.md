@@ -15,15 +15,16 @@ The plan is [`docs/PROJECT_SPEC.md`](docs/PROJECT_SPEC.md) (also `docs/PROJECT_S
 
 ## What you get
 
-Three start-screen buttons: **Student**, **Club Member** and **Administrator**. Each is its own login and only admits the right kind of account.
+The web app is the supplied **GENESIS Campus Connect (Amrita theme)** UI, unchanged in design and wired to the real API and database. Three entry paths on the first screen: **Student**, **Club Authority** and **Administrator** (Office of Student Affairs, or Events Section).
 
-- **Students**: browse and favourite clubs, club pages (About, Our work, Announcements, public Q&A, Events, Recruitment), events with one-click registration, QR tickets, waitlist, team registration, calendar with filters and an ICS feed, notifications (live toast that flies into the bell), activities, favourites, profile, settings, public share links.
-- **Club members** (six roles, custom roles, permissions per club): dashboard, event plans with poster and tentative hall hold, submit to the OSI (Leader only), registration form builder, registrations list and CSV, QR check-in, recruitment and applications, announcements, internal discussion with live updates, members and roles, leadership transfer, club profile and reports.
-- **OSI**: approvals queue with full plan and poster, approve, request changes or reject with a note, clubs, content reports.
-- **Events Authority**: hall requests, holds, hall management, blocked slots, availability timeline.
-- **Super Admin**: admin accounts (forced password change), suspend, audit log.
-- **Assistant**: a chat panel that answers from portal data only, using Claude on the server. Without an API key it still answers by quoting portal text.
-- Red and white theme with light and dark modes, responsive down to phones, installable as a PWA.
+- **Students**: dashboard, explore events, event details with live seat counts, one-click registration (checked by the server), calendar, registrations and history, clubs directory and favourites, notifications, Campus Assistant, profile, settings.
+- **Club Authority**: overview, club profile (own club only), members, event requests (new, edit, resubmit after corrections, with poster and documents), request tracker and feedback, promotions, our events.
+- **Events Section**: online review, hard-copy letter verification, publish and notify students, promotion review, club applications (view and AI duplicate check), clubs, reports.
+- **OSA**: everything the Events Section does plus the **final approval** of events and the **approve or reject** decision on club applications.
+- **Server-enforced rules**: sign-in per portal, role checks on every action, club scoping, the approval order (online review, hard copy, OSA approval, publish) and what each portal may see.
+- **Campus Assistant**: answers from published events, clubs and the process notes. With `ANTHROPIC_API_KEY` set it uses Claude on the server; without a key it answers with built-in rules.
+
+The earlier API modules (events with hall holds, forms, recruitment, discussions, custom roles, notifications stream) are still in `apps/api` and tested, but this UI does not use them. See decision D40.
 
 ## Stack
 
@@ -38,17 +39,27 @@ npm install
 cp .env.example .env
 ```
 
-Edit `.env`: set a long random `JWT_SECRET`, keep `AUTO_VERIFY_EMAIL=true`, and fill `SEED_SAMPLE_PASSWORD` and the three `SEED_*_PASSWORD` values with throwaway passwords. **Do not put `#` in a value** (it starts a comment in `.env`), or wrap the value in quotes. Then:
+Edit `.env`: set a long random `JWT_SECRET` and keep `AUTO_VERIFY_EMAIL=true`. **Do not put `#` in a value** (it starts a comment in `.env`), or wrap the value in quotes. Then:
 
 ```bash
 npm run db:reset
 npm run dev
 ```
 
-- Web: http://localhost:5173 (start screen with the three buttons)
+- Web: http://localhost:5173 (choose Student, Club Authority or Administrator)
 - API health: http://localhost:4000/api/v1/health
 
-Seeded development accounts (passwords are the ones you put in `.env`): `superadmin@campus.example`, `osi@campus.example`, `events@campus.example` (each must change the password at first login), and students `sample_leader`, `sample_vice`, `sample_secretary`, `sample_coordinator`, `sample_media`, `sample_member` (all in **Hut Labs**, one per club role) and `sample_student` (no club). The database also holds the team's 26-club directory, six sample halls, sample events in every status, a recruitment and registrations (all marked "Sample").
+Demo accounts (created because `SEED_DEMO_PORTAL=true`, never in production; the sign-in screen has a **Fill** button):
+
+| Role                   | Path               | User ID      | Password     |
+| ---------------------- | ------------------ | ------------ | ------------ |
+| Student                | Student            | `STU2026001` | `student123` |
+| Club Authority         | Club Authority     | `CLUB001`    | `club123`    |
+| Club Authority (other) | Club Authority     | `CLUB002`    | `club123`    |
+| OSA                    | Administrator, OSA | `OSA001`     | `osa123`     |
+| Events Section         | Administrator      | `EVT001`     | `events123`  |
+
+The database is seeded with the sample clubs, events, requests in every workflow state, promotions and club applications. "Today" is fixed at 10 October 2026 so the sample dates stay meaningful (decision D43).
 
 ### Turn on the AI assistant
 
@@ -59,7 +70,7 @@ ANTHROPIC_API_KEY=your-key
 LLM_MODEL=            # optional, defaults to claude-opus-5-5
 ```
 
-The assistant answers only from clubs, works, announcements, approved events, open recruitments and `docs/faq/*.md`. It never sees registrations, applications or any personal data, treats retrieved text as untrusted data, and falls back to a friendly message (with the club's contact) if the model fails.
+The Campus Assistant (student portal) answers only from published events, clubs and the process notes. It never sees registrations, requests, applications or any personal data, treats that text as untrusted data, and falls back to the built-in rules if the model fails. The administrators' duplicate-club check uses a similarity rule on the server (no model needed).
 
 ## Commands
 
@@ -85,12 +96,12 @@ docs/                Spec, decisions, ERD, context, user guide, deployment, FAQ 
 
 ## Test status
 
-| Suite                                                                                                    | Tests | Result |
-| -------------------------------------------------------------------------------------------------------- | ----- | ------ |
-| Shared package                                                                                           | 10    | pass   |
-| API (database, auth, RBAC and clubs, events, halls, registrations, content, engagement, chat, hardening) | 175   | pass   |
-| Web (screens, guards, portals, toast, bell, calendar, builder, forms, axe accessibility, theme contrast) | 46    | pass   |
-| End-to-end in Chrome, journeys E2E-01 to 09                                                              | 10    | pass   |
+| Suite                                                                                                             | Tests | Result |
+| ----------------------------------------------------------------------------------------------------------------- | ----- | ------ |
+| Shared package (constants, schemas, the approval workflow engine)                                                 | 25    | pass   |
+| API (database, auth, RBAC, earlier modules, **governance: portals, views, approvals, seats, uploads, assistant**) | 203   | pass   |
+| Web screens against an in-memory API running the real engine (portals, guards, approval flow, forms, route sweep) | 14    | pass   |
+| End-to-end in Chrome against the real API and database, journeys E2E-01 to 06                                     | 16    | pass   |
 
 All on SQLite. See [Known gaps](#known-gaps) for what has not been run.
 
@@ -154,7 +165,25 @@ All five phases of section 17 of the spec. `[x]` means built and covered by test
 - [~] Backups, monitoring, error reporting: documented in `docs/DEPLOYMENT.md`; structured logs and a health endpoint exist; **no external error-reporting service is wired in**
 - [x] User guide for students, clubs and administrators; demo data
 
+### Amrita UI integration
+
+- [x] Supplied frontend copied into `apps/web` with its design, pages and components unchanged (only data wiring and wording that said "simulated sign-in" or "stored in this browser" changed)
+- [x] Workflow engine, permissions, selectors and seed moved to `packages/shared/src/gov` and used by both the browser and the API
+- [x] Server-authoritative state in the database (`gov_docs`, `gov_meta`), one transaction per action, row lock on PostgreSQL
+- [x] Real sign-in per portal (`POST /auth/login` with `portal`), session restored from the refresh cookie after a reload
+- [x] Per-portal views of the state: students see only published events; a club sees its own requests in full and other clubs only as a time slot
+- [x] Actions refused by the server when the portal is wrong, the role is wrong or the club is not yours (tested, including bypassing the screen)
+- [x] Posters stored as real files; documents keep name and size only
+- [x] Student registrations in the database with a seat limit that holds under a race; favourites, bookmarks, notifications and preferences per account
+- [x] Campus Assistant and duplicate-club check served by the API
+- [x] Screens refresh every few seconds and on focus, so an approval shows up for others without a reload
+- [~] Documents (permission letter, proposal, venue form) are not stored as files, only their names and sizes, as in the supplied UI
+- [~] Club member rosters are generated sample data, as in the supplied UI
+
 ## Known gaps
+
+- **The supplied UI does not use the earlier hall, form and recruitment modules.** They remain in the API with their tests; the screens for them belonged to the replaced web app (decision D40).
+- **One browser profile holds one session.** The refresh cookie is shared by every tab of a browser profile, so two different people cannot be signed in side by side in the same profile (use separate profiles or private windows).
 
 - **PostgreSQL has not been run.** Migrations and tests are database-neutral and CI has a PostgreSQL job, but nothing was executed against PostgreSQL yet. The PostgreSQL-only hall exclusion constraint (migration 013) is written to the spec and untested.
 - **CI has not run on GitHub yet.**

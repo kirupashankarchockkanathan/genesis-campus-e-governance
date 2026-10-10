@@ -18,6 +18,11 @@ export async function createTestDb() {
 }
 
 export const TABLES_IN_CLEAN_ORDER = [
+  'gov_user_state',
+  'gov_registrations',
+  'gov_club_authorities',
+  'gov_meta',
+  'gov_docs',
   'chat_messages',
   'message_reports',
   'discussion_messages',

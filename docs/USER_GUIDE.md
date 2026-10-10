@@ -1,38 +1,43 @@
 # User guide
 
-Open the portal and choose one of three buttons: **Student**, **Club Member** or **Administrator**. Each is its own login. If you pick the wrong one, the portal tells you which to use.
+Open the portal and choose one of three paths: **Student**, **Club Authority** or **Administrator** (then **Office of Student Affairs** or **Events Section**). Each path has its own sign-in. If you use the wrong one, the portal says the User ID or password is not valid for that role. The demo accounts are listed in the README; the sign-in screen has a **Fill** button.
 
 ## Students
 
-1. **Sign up** (Student, then "Create a student account") with your college email, username, roll number, department, year and a password of at least 8 characters. Verify your email through the link we send.
-2. **Clubs**: search, filter by category, press the star to favourite a club. A "Recruiting" badge means applications are open. Open a club for About, Our work, Announcements, Discussion (ask the club a question), Events and Recruitment.
-3. **Events**: filter by club, type, date or "registered by me". Open an event, fill the short form (your profile details are filled in for you) and press Register. Your **QR ticket** appears on the event page and under Activities. If the event is full and the club enabled a waitlist, you join it and are registered automatically if a seat frees up.
-4. **Calendar** (icon at the top right): every approved event of every club. Registrations, favourite clubs, deadlines and recruitments are marked with shapes and text. Settings has a feed link for Google or Outlook Calendar.
-5. **Notifications** (bell): a card appears for new events and updates, then moves into the bell. Settings lets you switch categories off, except your own registrations and approvals.
-6. **Apply to a club**: open its Recruitment tab, press Register, answer the questions. You are notified of every decision, and accepted clubs appear under My Clubs.
-7. **Ask the assistant** (Ask button): questions about clubs, events and how the portal works.
+1. **Dashboard**: your registrations, upcoming events, favourite clubs, unread updates and a countdown to your next event.
+2. **Explore events**: search and filter published events. Open one for the details, the live seat count and the registration deadline. Press **Register for this event**; a confirmation appears and the seat is held for you on the server. If the event is full or closed the button says so. **Cancel** on the event page frees your seat.
+3. **Calendar**: every published event; the ones you registered for are marked.
+4. **Registrations**: what is coming up and your history.
+5. **Clubs and favourites**: search and filter the directory, save a club with the heart (a bookmark, not membership), open a club for its profile and events.
+6. **Notifications**: registration confirmations, deadlines and "New event" notices that appear when an event is published. Mark one or all as read.
+7. **Assistant**: ask about events, clubs or how things work. It answers only from published events, clubs and the process notes, and says so when it cannot find an answer.
+8. **Settings**: reminders and email preferences, reset your own data, sign out.
 
-## Club members
+## Club Authority
 
-Log in with **Club Member**. What you see depends on your role in each club (Leader, Vice Leader, Secretary, Event Coordinator, Media Lead, Member). Buttons your role cannot use are hidden or explained.
+- **Overview**: your club's requests, upcoming events and recent activity.
+- **Event requests, New request**: title, category, description, date and time (at least two days ahead, ending by 9 PM), venue, expected attendance, registration deadline, audience, a **poster** and the required documents (permission letter, proposal, venue form). The form warns about venue clashes and capacity. Save a draft or **Submit for review**.
+- **Request page**: a five-step tracker (Submitted, Online review, Hard-copy check, OSA approval, Published) and any feedback. If corrections are requested, **Correct & resubmit** (the version number goes up and the review restarts). A rejection shows the reasons.
+- **Promotions**: ask for dashboard, poster-board, signage or newsletter support for an event; update and resubmit if changes are requested.
+- **Club profile**: edit your own club's description, objectives and contact details. You cannot open another club's requests.
 
-- **Plan an event** (Add an event): title, summary, description, objectives, dates and expected numbers. Upload the poster (PNG, JPG, WebP or PDF, up to 5 MB).
-- **Submit to the OSI** (Leader only): pick a free hall; it is held for you while the OSI reviews. If the OSI asks for changes, edit and submit again. A club can hold at most two halls at once.
-- **Registration form** (Form tab): add questions, reorder with the arrow buttons, preview. After approval press Publish registration. The seat limit defaults to the hall's capacity.
-- **Registrations** tab: counts for everyone, answers and CSV for roles with that permission, and **check-in**: scan a ticket with the camera or type the code.
-- **Final hall request** (Leader or Vice Leader, Hall tab): after registration closes, keep the hall or pick a better one based on the real count.
-- **Announcements**, **Recruitment** (create, open, review applications and choose the role on acceptance), **Members and roles** (change roles, remove, transfer leadership; the Leader can create custom roles), **Discussion**, **Club profile**, **Reports**.
+## Events Section
 
-## Administrators
+- **Event requests**: tabs and filters; a flag marks venue clashes. Open a request to **Clear online review**, **Request corrections** or **Reject** (a reason is required), and to **Record hard-copy check** (date received and reference number).
+- **Publish & notify students** after OSA has approved. Only then does the event reach students.
+- **Hard-copy checks**, **Promotions** (approve, ask for changes, reject), **Club applications** (view and run the duplicate-club check; the decision is OSA's), **Clubs**, **Reports** and **Settings**.
+- The final-approval button is locked with an explanation: the server refuses it as well.
 
-Log in with **Administrator**. First login asks you to change your password.
+## Office of Student Affairs (OSA)
 
-- **OSI**: Approvals shows submitted plans with the held hall. Open one and choose _Approve and circulate_, _Request changes_ or _Reject_ (a note is required for the last two). Clubs creates clubs and assigns the first Leader. Reports lists messages reported in public discussions.
-- **Events Authority**: Hall requests (approve, optionally change the hall, or deny with a note), Holds, Halls (add, edit, deactivate, block times for classes or exams) and Availability.
-- **Super Admin**: Users (create admin accounts, suspend and reactivate) and the Audit log.
+Everything the Events Section can do, plus:
+
+- **Grant final approval** once the online review is cleared and the hard-copy letter is verified.
+- **Club applications**: run the duplicate-club check, then approve, ask for corrections or reject. Approving needs all three documents, at least ten founding members, the check, and your confirmation when a very similar club exists. An approved club appears for students at once.
+- **Settings, Reset demo data**: restores the sample data (available only while the demo accounts are enabled).
 
 ## Good to know
 
-- Times are shown in the portal time zone (Asia/Kolkata by default).
-- Everything you can see is decided by the server; hiding a button is only a convenience.
-- Forgot your password? Use the link on the login page. The reset link works once and for one hour.
+- Screens refresh every few seconds, so an approval made by someone else shows up without a reload.
+- One browser profile holds one signed-in person at a time; use a private window to try a second role side by side.
+- Documents are recorded by name and size only; posters are stored as real image files.

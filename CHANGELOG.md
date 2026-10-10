@@ -2,6 +2,14 @@
 
 All notable changes, newest first. One line per completed task (spec section 0, rule 9).
 
+## 1.1.0 (Amrita UI on the real backend)
+
+- Replaced the web app with the supplied GENESIS Campus Connect (Amrita theme) UI, design unchanged.
+- New `gov` API module: portal sign-in, per-portal state, server-enforced approval workflow, poster uploads, seats and registrations, student state, Campus Assistant and duplicate-club check, demo reset.
+- Workflow engine, permissions, selectors and seed data moved to `packages/shared/src/gov`.
+- Migration 017 (governance tables), demo account seeding (`SEED_DEMO_PORTAL`).
+- Tests: shared 25, API 203, web 14, end-to-end 16.
+
 ## 1.0.0 (all phases of the spec)
 
 ### Phases 1 to 4

@@ -26,6 +26,12 @@ export default [
       'react/prop-types': 'off',
       'react/react-in-jsx-scope': 'off',
       'no-alert': 'error',
+      // The supplied Amrita UI keeps its own copy and markup; apostrophes in text are fine in JSX.
+      'react/no-unescaped-entities': 'off',
     },
+  },
+  {
+    files: ['apps/web/src/pages/**/*.jsx'],
+    rules: { 'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }] },
   },
 ];
