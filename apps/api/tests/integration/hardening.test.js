@@ -184,31 +184,26 @@ describe('security probes (spec 15.10)', () => {
 
   it('privilege escalation through the request body is ignored', async () => {
     const s = await makeStudent(knex, app);
-    const patch = await request(app)
-      .patch(`${API}/me/profile`)
-      .set(bearer(s.token))
-      .send({
-        fullName: 'Still Me',
-        platformRole: 'super_admin',
-        platform_role: 'super_admin',
-        status: 'active',
-        mustChangePassword: false,
-      });
+    const patch = await request(app).patch(`${API}/me/profile`).set(bearer(s.token)).send({
+      fullName: 'Still Me',
+      platformRole: 'super_admin',
+      platform_role: 'super_admin',
+      status: 'active',
+      mustChangePassword: false,
+    });
     expect(patch.status).toBe(200);
     expect(patch.body.data.platformRole).toBe('student');
     expect((await knex('users').where({ id: s.user.id }).first()).platform_role).toBe('student');
-    const signup = await request(app)
-      .post(`${API}/auth/signup`)
-      .send({
-        fullName: 'Eve Evil',
-        email: 'eve@campus.example',
-        username: 'eve_evil',
-        rollNumber: '1',
-        department: 'CSE',
-        yearOfStudy: 1,
-        password: 'Str0ng-Pass!word',
-        platformRole: 'super_admin',
-      });
+    const signup = await request(app).post(`${API}/auth/signup`).send({
+      fullName: 'Eve Evil',
+      email: 'eve@campus.example',
+      username: 'eve_evil',
+      rollNumber: '1',
+      department: 'CSE',
+      yearOfStudy: 1,
+      password: 'Str0ng-Pass!word',
+      platformRole: 'super_admin',
+    });
     expect(signup.status).toBe(201);
     expect((await knex('users').where({ username: 'eve_evil' }).first()).platform_role).toBe('student');
   });

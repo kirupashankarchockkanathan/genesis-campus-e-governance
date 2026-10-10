@@ -1,0 +1,11 @@
+{
+  "name": "Campus Clubs Portal",
+  "short_name": "Clubs Portal",
+  "description": "Every club, event and announcement on campus, in one place.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#b01227",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

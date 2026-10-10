@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import nodemailer from 'nodemailer';
 import { config } from '../config/index.js';
 import { logger } from './logger.js';
@@ -19,6 +21,16 @@ const getTransport = () => {
 export async function sendMail({ to, subject, text }) {
   if (config.NODE_ENV === 'test') {
     outbox.push({ to, subject, text });
+    return;
+  }
+  if (config.MAIL_OUTBOX_FILE) {
+    const file = path.resolve(config.apiRoot, config.MAIL_OUTBOX_FILE);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.appendFileSync(
+      file,
+      `${JSON.stringify({ to, subject, text })}
+`,
+    );
     return;
   }
   const t = getTransport();

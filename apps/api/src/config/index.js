@@ -35,6 +35,8 @@ const schema = z.object({
   SMTP_PORT: z.coerce.number().default(587),
   SMTP_USER: z.string().default(''),
   SMTP_PASS: z.string().default(''),
+  // Development and end-to-end tests only: append every outgoing mail to this file as JSON lines.
+  MAIL_OUTBOX_FILE: z.string().default(''),
   MAIL_FROM: z.string().default('Campus Clubs Portal <no-reply@campus.example>'),
   STORAGE_DRIVER: z.enum(['local', 's3']).default('local'),
   UPLOAD_DIR: z.string().default('./uploads'),
@@ -67,6 +69,7 @@ export function loadConfig(env = process.env) {
       throw new Error('JWT_SECRET is missing or too weak for production');
     }
     if (c.AUTO_VERIFY_EMAIL) throw new Error('AUTO_VERIFY_EMAIL must be false in production');
+    if (c.MAIL_OUTBOX_FILE) throw new Error('MAIL_OUTBOX_FILE must not be set in production');
   }
   return {
     ...c,

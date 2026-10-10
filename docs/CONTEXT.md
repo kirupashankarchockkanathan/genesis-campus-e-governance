@@ -1,73 +1,61 @@
 # Project context and progress
 
-Last updated: 10 October 2026. Read this first to see what is done, what is next and what to be careful about.
+Last updated: 11 October 2026. Read this first to see what is done, what is next and what to be careful about.
 
-## What this project is
+## What this is
 
-Campus Clubs Portal, built to `docs/PROJECT_SPEC.md` (version 1.0). Stack: React + Vite, Express, Knex (SQLite local, PostgreSQL hosted), own authentication, red and white theme.
+Campus Clubs Portal, built to `docs/PROJECT_SPEC.md` (version 1.0). React + Vite, Express, Knex (SQLite local, PostgreSQL hosted), own authentication, red and white theme, Claude-powered assistant.
 
 ## Git state
 
-| Branch                        | Purpose                                                                                    |
-| ----------------------------- | ------------------------------------------------------------------------------------------ |
-| `main`                        | Baseline only: the project spec (`docs/PROJECT_SPEC.docx` and `.md`). Untouched since.     |
-| `feature/phase-0-foundations` | All Phase 0 work. Open a pull request into `main` when the team leader is ready to review. |
+| Branch                        | Content                                                                |
+| ----------------------------- | ---------------------------------------------------------------------- |
+| `main`                        | The whole project (all phases), merged from the feature branches.      |
+| `feature/phase-0-foundations` | Phase 0 history.                                                       |
+| `feature/phase-1-core`        | Phases 1 to 4 history (events, engagement, assistant, hardening, e2e). |
 
-No remote is configured yet. The team leader's GitHub repository URL was not available when the work was done. To connect it:
+Remote: https://github.com/shreesanth-78/genesis-campus-e-governance
 
-```bash
-git remote add origin <repo-url>
-git push -u origin main
-git push -u origin feature/phase-0-foundations
-```
+## How much was done
 
-(If the leader's repository already has a `main`, fetch it first and rebase or merge the baseline commit.)
+**All five phases of the spec's build plan (section 17)**, with the caveats listed under "Not verified".
 
-## What was done (Phase 0, complete)
+- Phase 0: foundations, auth, roles and permissions, seeds, CI file.
+- Phase 1: clubs, announcements, events, OSI approval, tentative hall holds, forms and registration, QR tickets, halls and final requests, jobs, notifications (SSE, toast into the bell), calendar, student pages, club workspace, Super Admin.
+- Phase 2: recruitment, favourites, internal discussion with live updates, QR check-in, waitlist, team and file fields, share page, ICS feed, email copies, custom roles, club reports.
+- Phase 3: public discussion with reports and moderation, chatbot (Claude via the official SDK, grounded in portal data), PWA.
+- Phase 4: accessibility tests, contrast checks, lazy routes, performance and security tests, error boundary, user guide, deployment guide, demo data.
+- Start screen with exactly three logins (Student, Club Member, Administrator); bigger club and event screens.
 
-How much: **all nine Phase 0 tasks and every Phase 0 exit test**, except the Husky hook (deferred, D28) and a real CI run (workflow is written but the repo has no remote).
+## Test results (all on SQLite)
 
-- Spec converted to Markdown and stored in `docs/`.
-- Monorepo with npm workspaces, ESLint, Prettier, `.env.example`, `CLAUDE.md`, CI workflow, optional PostgreSQL compose file.
-- `packages/shared`: 19 permission keys, default role matrix, locked permissions, status lists and event transitions, error codes with HTTP statuses, constants, Zod auth schemas.
-- API: config validated with Zod (refuses weak `JWT_SECRET` in production), layered modules, stable error format, helmet, strict CORS, request id, health check.
-- Database: 10 tables, DB-level checks (status values, lower-case email and username, capacity, year range), foreign keys on for SQLite, idempotent seeds.
-- Auth: sign-up with college-domain check, email verification tokens, login by username or email, brute-force limit, rotating refresh tokens with reuse detection, forgot and reset, change password, forced change for admins, `/me` with per-club permissions.
-- RBAC: deny by default, per-club scope taken from the resource, permissions re-read each request.
-- Clubs and members: list, detail, OSI create with the six default roles and a Leader, add and remove members, change role, atomic leadership transfer with exactly one Leader.
-- Seeds: 6 sample halls, **26 clubs from the team's club list** (see D18), 3 admin accounts, 7 sample students with the six club roles in Hut Labs.
-- Web: red and white tokens in light and dark, responsive shell (sidebar becomes bottom tabs under 900px), role-based sidebars, guards, API client with silent refresh, auth screens, clubs list, My Clubs, club dashboard, members page, profile, theme toggle.
+| Suite                             | Tests | Result |
+| --------------------------------- | ----- | ------ |
+| Shared                            | 10    | pass   |
+| API                               | 175   | pass   |
+| Web                               | 46    | pass   |
+| End-to-end (Chrome, E2E-01 to 09) | 10    | pass   |
 
-## Test results
+Lint (ESLint and Prettier) is clean. Every role's screens were also walked in a real browser during development.
 
-| Suite                                                | Count  | Result                |
-| ---------------------------------------------------- | ------ | --------------------- |
-| `packages/shared`                                    | 10     | pass                  |
-| `apps/api` (database 17, auth 21, RBAC and clubs 17) | 55     | pass                  |
-| `apps/web` (components)                              | 16     | pass                  |
-| **Total**                                            | **81** | **pass, SQLite only** |
+## Not verified (be honest with the team)
 
-Lint (ESLint and Prettier) is clean. The login, sign-up and clubs flow was also checked by hand in a browser on desktop and phone widths.
+- PostgreSQL parity (CI job written, never run; the hall exclusion constraint migration is untested).
+- GitHub Actions has not run.
+- Live Claude API (needs `ANTHROPIC_API_KEY`) and real SMTP.
+- S3 storage driver is not implemented.
+- Manual keyboard and screen-reader accessibility pass.
 
-## Not done yet, and why
+## Next steps
 
-- PostgreSQL runs: no PostgreSQL available locally; CI job is ready.
-- CI run: needs the remote repository.
-- Husky: deferred (D28).
-- Everything in Phases 1 to 4 (see the checklist in `README.md`).
-- Phase 1 pieces already begun: clubs list and OSI create-club API, club dashboard and members page (read-only).
-
-## Next steps (Phase 1, in this order)
-
-1. Connect the remote, push both branches, confirm CI is green on SQLite and PostgreSQL.
-2. Club detail page (About, Our work) and announcements with permissions.
-3. Events: draft, poster upload, submit with tentative hold (write the hold and overlap tests first: TC-DB-20 to 22, TC-HALL-09), OSI approvals.
-4. Forms, registration with QR ticket, halls and final hall request, jobs, notifications, calendar.
+1. Run CI on GitHub and fix anything that only shows on PostgreSQL.
+2. Add the S3 driver and an error-reporting service before hosting.
+3. Add `ANTHROPIC_API_KEY` and try the assistant on real questions.
+4. Answer the open questions in spec section 18.2 and update `docs/DECISIONS.md`.
 
 ## Things to remember
 
-- Never retype permission keys, statuses or error codes; import from `@ccp/shared`.
-- Never weaken a permission check or constraint to make a test pass.
-- Keep colours in `tokens.css` only.
-- Do not commit `.env`. Local passwords are throwaway values.
-- Open questions for the team are in spec section 18.2; defaults are in `docs/DECISIONS.md`.
+- Permission keys, statuses and error codes come from `@ccp/shared`; never retype them.
+- Never weaken a constraint or a permission check to make a test pass.
+- Colours only from `apps/web/src/styles/tokens.css`.
+- Local `.env` holds throwaway secrets and is never committed; do not put `#` in values.

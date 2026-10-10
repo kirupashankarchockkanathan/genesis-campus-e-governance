@@ -2,7 +2,19 @@
 
 All notable changes, newest first. One line per completed task (spec section 0, rule 9).
 
-## Unreleased (branch `feature/phase-0-foundations`)
+## 1.0.0 (all phases of the spec)
+
+### Phases 1 to 4
+
+- Start screen with three logins: Student, Club Member, Administrator.
+- Bigger club cards and club hero page; event cards with media, date badge and seat bar; event hero with fact tiles.
+- Events, OSI approvals, tentative holds, final hall requests, forms and registration, QR tickets and check-in, waitlist, team and file fields, calendar and ICS feed, notifications with SSE and email copies, announcements, recruitment, discussions, custom roles, reports, Super Admin tools.
+- Chatbot grounded in portal data with the official Anthropic SDK, with extractive fallback.
+- PWA, lazy routes, error boundary, purpose-bound tokens, security and performance tests, axe and contrast tests.
+- Playwright journeys E2E-01 to 09, Husky pre-commit hook, user guide, deployment guide, demo data.
+- Tests: shared 10, API 175, web 46, end-to-end 10.
+
+## Phase 0 (foundations)
 
 ### Phase 0: Foundations
 
