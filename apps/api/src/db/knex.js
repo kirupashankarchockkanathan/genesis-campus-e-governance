@@ -30,7 +30,7 @@ export function buildKnexConfig({ client = config.DATABASE_CLIENT, filename, con
     // Section 9.4: foreign keys must be ON for every SQLite connection.
     pool: {
       min: 1,
-      max: file === ':memory:' ? 1 : 5,
+      max: 1, // one connection serialises SQLite writers, so check-then-insert in a transaction is race-free
       afterCreate: (conn, done) => {
         conn.pragma('foreign_keys = ON');
         done(null, conn);

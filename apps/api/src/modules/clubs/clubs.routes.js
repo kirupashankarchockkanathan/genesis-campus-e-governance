@@ -47,7 +47,11 @@ clubsRouter.get(
 );
 clubsRouter.get(
   '/:id',
-  wrap(async (req, res) => res.json({ data: await getClub(db(req), req.params.id) })),
+  wrap(async (req, res) => {
+    const club = await getClub(db(req), req.params.id);
+    const fav = await db(req)('favorite_clubs').where({ user_id: req.user.id, club_id: club.id }).first();
+    res.json({ data: { ...club, isFavourite: Boolean(fav) } });
+  }),
 );
 
 clubsRouter.post(

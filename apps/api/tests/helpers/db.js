@@ -18,6 +18,17 @@ export async function createTestDb() {
 }
 
 export const TABLES_IN_CLEAN_ORDER = [
+  'notification_preferences',
+  'notifications',
+  'hall_bookings',
+  'hall_blocked_slots',
+  'event_reviews',
+  'registrations',
+  'form_responses',
+  'forms',
+  'events',
+  'announcements',
+  'club_works',
   'audit_logs',
   'refresh_tokens',
   'auth_tokens',

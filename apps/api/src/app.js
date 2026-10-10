@@ -9,6 +9,11 @@ import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { usersRouter } from './modules/users/users.routes.js';
 import { clubsRouter } from './modules/clubs/clubs.routes.js';
+import { eventsRouter } from './modules/events/events.routes.js';
+import { hallsRouter } from './modules/halls/halls.routes.js';
+import { contentRouter } from './modules/content/content.routes.js';
+import { notificationsRouter } from './modules/notifications/notifications.routes.js';
+import { uploadDir } from './lib/storage.js';
 
 /**
  * Builds the Express app (used by server.js and by tests).
@@ -25,6 +30,16 @@ export function createApp({ db = getDb(), extraRoutes } = {}) {
   app.use(express.json({ limit: '100kb' }));
   app.use(cookieParser());
 
+  // Uploaded posters are served with nosniff and never executed (spec 11.5).
+  app.use(
+    '/uploads',
+    express.static(uploadDir(), {
+      index: false,
+      dotfiles: 'deny',
+      setHeaders: (res) => res.set('X-Content-Type-Options', 'nosniff'),
+    }),
+  );
+
   const api = express.Router();
   api.get('/health', async (_req, res) => {
     try {
@@ -37,6 +52,10 @@ export function createApp({ db = getDb(), extraRoutes } = {}) {
   api.use('/auth', authRouter);
   api.use('/', usersRouter);
   api.use('/clubs', clubsRouter);
+  api.use('/', contentRouter);
+  api.use('/', eventsRouter);
+  api.use('/', hallsRouter);
+  api.use('/', notificationsRouter);
   if (extraRoutes) extraRoutes(api);
   app.use('/api/v1', api);
 
