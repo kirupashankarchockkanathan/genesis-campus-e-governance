@@ -5,6 +5,8 @@ import { rememberClub, sidebarFor } from '../../utils/navigation.js';
 import { Sidebar } from './Sidebar.jsx';
 import { TopBar } from './TopBar.jsx';
 import { BottomTabs } from './BottomTabs.jsx';
+import { ToastStack } from '../notifications/ToastStack.jsx';
+import { ChatPanel } from '../chat/ChatPanel.jsx';
 
 export function AppShell() {
   const { platformRole, memberships } = useAuth();
@@ -12,6 +14,8 @@ export function AppShell() {
   const clubId =
     matchPath('/club/:clubId/*', pathname)?.params.clubId ??
     matchPath('/club/:clubId', pathname)?.params.clubId;
+  const slug = matchPath('/clubs/:slug', pathname)?.params.slug;
+  const chatClub = clubId ?? slug;
   const items = sidebarFor({ platformRole, memberships, clubId });
 
   useEffect(() => {
@@ -31,6 +35,8 @@ export function AppShell() {
         </main>
       </div>
       <BottomTabs items={items} />
+      <ToastStack />
+      {platformRole === 'student' && <ChatPanel key={chatClub ?? 'general'} clubId={chatClub} />}
     </div>
   );
 }

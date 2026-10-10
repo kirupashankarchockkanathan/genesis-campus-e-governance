@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '../auth/AuthContext.jsx';
+import { NotificationsProvider } from '../components/notifications/NotificationsProvider.jsx';
 
 export const makeQueryClient = () =>
   new QueryClient({
@@ -14,7 +15,9 @@ export function Providers({ children, router: Router = DefaultRouter, client = m
   return (
     <QueryClientProvider client={client}>
       <Router>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <NotificationsProvider>{children}</NotificationsProvider>
+        </AuthProvider>
       </Router>
     </QueryClientProvider>
   );

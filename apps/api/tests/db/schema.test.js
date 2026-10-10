@@ -6,6 +6,7 @@ import { toDb, fromDb, jsonToDb, jsonFromDb } from '../../src/db/helpers.js';
 import { overrideConfig } from '../../src/config/index.js';
 import { transferLeadership, addMember } from '../../src/modules/members/members.service.js';
 import { seedHalls, seedClubs, seedAdmins, seedSample, SAMPLE_CLUBS } from '../../src/db/seeding/index.js';
+import { seedSampleContent } from '../../src/db/seeding/sampleContent.js';
 import { newId } from '../../src/lib/ids.js';
 
 let knex;
@@ -219,6 +220,7 @@ describe('seeds', () => {
     await seedClubs(knex);
     await seedAdmins(knex);
     await seedSample(knex);
+    await seedSampleContent(knex);
   };
   const counts = async () => ({
     halls: Number((await knex('halls').count('* as c').first()).c),
@@ -226,6 +228,9 @@ describe('seeds', () => {
     roles: Number((await knex('club_roles').count('* as c').first()).c),
     users: Number((await knex('users').count('* as c').first()).c),
     members: Number((await knex('club_members').count('* as c').first()).c),
+    events: Number((await knex('events').count('* as c').first()).c),
+    registrations: Number((await knex('registrations').count('* as c').first()).c),
+    recruitments: Number((await knex('recruitments').count('* as c').first()).c),
   });
 
   it('TC-DB-16 running all seeds twice creates no duplicates', async () => {
@@ -245,6 +250,19 @@ describe('seeds', () => {
     expect(first.roles).toBe(SAMPLE_CLUBS.length * 6);
     expect(first.users).toBe(3 + 7);
     expect(first.members).toBe(6);
+    // Appendix A: an event in each of the seven statuses, a recruitment and registrations.
+    expect(first.events).toBe(7);
+    expect(first.recruitments).toBe(1);
+    expect(first.registrations).toBe(2);
+    expect((await knex('events').distinct('status').pluck('status')).sort()).toEqual([
+      'approved',
+      'cancelled',
+      'changes_requested',
+      'completed',
+      'draft',
+      'rejected',
+      'submitted',
+    ]);
     const admin = await knex('users').where({ platform_role: 'osi_admin' }).first();
     expect(Number(admin.must_change_password)).toBe(1);
   });
@@ -261,5 +279,6 @@ describe('seeds', () => {
     const c = await counts();
     expect(c.users).toBe(0);
     expect(c.members).toBe(0);
+    expect(c.events).toBe(0);
   });
 });

@@ -142,13 +142,11 @@ export async function answerQuestion(db, user, { message, clubId }, { llm }) {
 export async function history(db, userId, { clubId, limit = 40 } = {}) {
   const q = db('chat_messages').where({ user_id: userId }).orderBy('created_at', 'desc').limit(limit);
   if (clubId) q.where({ club_id: clubId });
-  return (await q)
-    .reverse()
-    .map((m) => ({
-      id: m.id,
-      role: m.role,
-      content: m.content,
-      sources: jsonFromDb(m.sources_json, []),
-      createdAt: m.created_at,
-    }));
+  return (await q).reverse().map((m) => ({
+    id: m.id,
+    role: m.role,
+    content: m.content,
+    sources: jsonFromDb(m.sources_json, []),
+    createdAt: m.created_at,
+  }));
 }

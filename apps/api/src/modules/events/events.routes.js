@@ -175,10 +175,15 @@ eventsRouter.delete(
   }),
 );
 
+// Club members read their event's history; the OSI reads it while reviewing.
+const memberOrOsi = (req, res, next) =>
+  req.user.platform_role === PLATFORM_ROLES.OSI_ADMIN
+    ? next()
+    : requireClubPermission(null, eventClub)(req, res, next);
 eventsRouter.get(
   '/events/:id/history',
   auth,
-  requireClubPermission(null, eventClub),
+  memberOrOsi,
   wrap(async (req, res) => res.json({ data: await events.eventHistory(db(req), req.params.id) })),
 );
 

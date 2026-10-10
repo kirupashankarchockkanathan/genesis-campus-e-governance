@@ -135,7 +135,7 @@ const memberCountSql = (db) =>
     .where('club_members.status', 'active')
     .toSQL();
 
-export async function listClubs(db, { q, category } = {}) {
+export async function listClubs(db, { q, category, recruiting } = {}, viewerId = null) {
   const sub = memberCountSql(db);
   const query = db('clubs')
     .select('clubs.*', db.raw(`(${sub.sql}) as member_count`, sub.bindings))
@@ -148,7 +148,23 @@ export async function listClubs(db, { q, category } = {}) {
       b.whereRaw('lower(name) like ?', [like]).orWhereRaw('lower(description) like ?', [like]),
     );
   }
-  return (await query).map(clubDto);
+  const rows = await query;
+  // "Recruiting" badge: an open recruitment whose deadline has not passed (FR-CLUB-01).
+  const recruitingIds = new Set(
+    await db('recruitments')
+      .where({ status: 'open' })
+      .where('deadline', '>', toDb(clock.now()))
+      .pluck('club_id'),
+  );
+  const favIds = new Set(
+    viewerId ? await db('favorite_clubs').where({ user_id: viewerId }).pluck('club_id') : [],
+  );
+  const out = rows.map((r) => ({
+    ...clubDto(r),
+    recruiting: recruitingIds.has(r.id),
+    isFavourite: favIds.has(r.id),
+  }));
+  return recruiting === 'true' ? out.filter((c) => c.recruiting) : out;
 }
 
 export async function getClub(db, idOrSlug) {

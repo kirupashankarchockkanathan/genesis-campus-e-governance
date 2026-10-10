@@ -28,6 +28,7 @@ const createClubSchema = z.object({
 const listQuery = z.object({
   q: z.string().trim().max(100).optional(),
   category: z.string().trim().max(60).optional(),
+  recruiting: z.enum(['true', 'false']).optional(),
 });
 // Role keys include custom roles (CUSTOM_*), so they are validated against the club's own roles in the service.
 const roleKeySchema = z.string().trim().min(1).max(60);
@@ -45,7 +46,7 @@ clubsRouter.use(requireAuth());
 clubsRouter.get(
   '/',
   validate({ query: listQuery }),
-  wrap(async (req, res) => res.json({ data: await listClubs(db(req), req.validatedQuery) })),
+  wrap(async (req, res) => res.json({ data: await listClubs(db(req), req.validatedQuery, req.user.id) })),
 );
 clubsRouter.get(
   '/:id',

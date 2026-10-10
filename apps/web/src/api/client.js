@@ -22,16 +22,18 @@ export const setSessionLostHandler = (fn) => {
   onSessionLost = fn;
 };
 
-async function rawFetch(path, { method = 'GET', body, token } = {}) {
-  const headers = { Accept: 'application/json' };
+/** One network call. `formData` sends multipart; `blob` returns the raw body (CSV export). */
+async function rawFetch(path, { method = 'GET', body, formData, token, blob = false } = {}) {
+  const headers = { Accept: blob ? '*/*' : 'application/json' };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
   if (token) headers.Authorization = `Bearer ${token}`;
   const res = await fetch(`${BASE}${path}`, {
     method,
     headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
+    body: formData ?? (body === undefined ? undefined : JSON.stringify(body)),
     credentials: 'include',
   });
+  if (res.ok && blob) return res.blob();
   let payload = null;
   try {
     payload = await res.json();
@@ -42,15 +44,15 @@ async function rawFetch(path, { method = 'GET', body, token } = {}) {
     const e = payload?.error ?? {};
     throw new ApiError(res.status, e.code ?? 'INTERNAL', e.message ?? 'Something went wrong.', e.details);
   }
-  return payload?.data ?? null;
+  return payload; // { data, meta? }
 }
 
 /** Calls /auth/refresh once even if several requests fail at the same moment. */
 export function refreshSession() {
   refreshing ??= rawFetch('/auth/refresh', { method: 'POST' })
-    .then((data) => {
-      accessToken = data.accessToken;
-      return data;
+    .then((res) => {
+      accessToken = res.data.accessToken;
+      return res.data;
     })
     .finally(() => {
       refreshing = null;
@@ -58,8 +60,7 @@ export function refreshSession() {
   return refreshing;
 }
 
-/** Authenticated request: adds the bearer token, on 401 refreshes once and retries, then logs out. */
-export async function api(path, options = {}) {
+async function authed(path, options) {
   try {
     return await rawFetch(path, { ...options, token: accessToken });
   } catch (err) {
@@ -75,4 +76,18 @@ export async function api(path, options = {}) {
   }
 }
 
-export const publicApi = (path, options = {}) => rawFetch(path, options);
+/** Authenticated request returning `data`: adds the bearer token, on 401 refreshes once and retries, then logs out. */
+export async function api(path, options = {}) {
+  return (await authed(path, options))?.data ?? null;
+}
+
+/** Same as `api` but also returns `meta` (pagination). */
+export const apiWithMeta = (path, options = {}) => authed(path, options);
+
+/** Multipart upload, e.g. a poster. */
+export const apiUpload = (path, formData) => api(path, { method: 'POST', formData });
+
+/** Download a file (CSV export) with the bearer token. */
+export const apiBlob = (path) => authed(path, { blob: true });
+
+export const publicApi = async (path, options = {}) => (await rawFetch(path, options))?.data ?? null;
