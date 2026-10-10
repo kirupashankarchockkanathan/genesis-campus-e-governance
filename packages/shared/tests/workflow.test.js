@@ -214,7 +214,7 @@ describe('club applications & duplicate detection', () => {
     const clubs = allClubs(s);
     const matches = localDuplicateCheck(
       {
-        name: 'Robotics Club',
+        name: 'Hut Labs',
         category: 'Robotics',
         objectives: 'Build robots and compete in robotics competitions with embedded systems.',
       },
@@ -242,7 +242,7 @@ describe('club applications & duplicate detection', () => {
       wf.saveAiCheck(s, osa, 'CA-501', {
         source: 'local-mock',
         ranAt: 'x',
-        matches: [{ clubId: 'robotics', name: 'Robotics Society', score: 0.8, reasons: [] }],
+        matches: [{ clubId: 'robotics', name: 'Hut Labs', score: 0.8, reasons: [] }],
         summary: '',
       }),
     ).state;

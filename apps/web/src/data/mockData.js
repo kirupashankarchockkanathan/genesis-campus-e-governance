@@ -94,7 +94,7 @@ export const CATEGORY_STYLES = {
 export const DASH_UPDATES = [
   { id: 'd1', icon: 'Bell', tone: 'mint', title: 'A new campus event is live', body: 'GENESIS Innovation Sprint is open for registration.', time: '18 min ago' },
   { id: 'd2', icon: 'Bell', tone: 'amber', title: 'Your place is confirmed', body: "You're registered for Design & Build Workshop.", time: 'Yesterday' },
-  { id: 'd3', icon: 'Bell', tone: 'sky', title: 'New from Design Club', body: "A workshop has been added to this week's calendar.", time: 'Yesterday' },
+  { id: 'd3', icon: 'Bell', tone: 'sky', title: 'New from Kalakriti', body: "A workshop has been added to this week's calendar.", time: 'Yesterday' },
 ];
 
 /* ------------------------------------------------------------------ */
@@ -117,7 +117,7 @@ export const AI_ANSWERS = [
   {
     match: ['robotics'],
     answer:
-      'The Robotics Society (126 members, 2 upcoming events) is the club focused on robotics. It also hosts the Robotics Open Lab on 3 October.',
+      'The Hut Labs (126 members, 2 upcoming events) is the club focused on robotics. It also hosts the Robotics Open Lab on 3 October.',
   },
   {
     match: ['week', 'happening'],

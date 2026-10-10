@@ -155,7 +155,7 @@ export default function ExploreEvents() {
         </div>
         <div className="relative flex items-center justify-between bg-brand-900/60 px-7 py-2 text-[8px] font-bold uppercase tracking-[0.18em] text-brand-200 sm:px-9">
           <span>01 / Featured event</span>
-          <span>Innovation Club · Hackathon</span>
+          <span>Google Developer Student Clubs (GDSC) · Hackathon</span>
         </div>
       </section>
 

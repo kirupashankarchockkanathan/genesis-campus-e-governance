@@ -101,9 +101,9 @@ docs/                Spec, decisions, ERD, context, user guide, deployment, FAQ 
 | Suite                                                                                                             | Tests | Result |
 | ----------------------------------------------------------------------------------------------------------------- | ----- | ------ |
 | Shared package (constants, schemas, the approval workflow engine)                                                 | 25    | pass   |
-| API (database, auth, RBAC, earlier modules, **governance: portals, views, approvals, seats, uploads, assistant**) | 203   | pass   |
+| API (database, auth, RBAC, earlier modules, **governance: portals, views, approvals, seats, uploads, assistant**) | 206   | pass   |
 | Web screens against an in-memory API running the real engine (portals, guards, approval flow, forms, route sweep) | 14    | pass   |
-| End-to-end in Chrome against the real API and database, journeys E2E-01 to 06                                     | 16    | pass   |
+| End-to-end in Chrome against the real API and database, journeys E2E-01 to 07                                     | 19    | pass   |
 
 All on SQLite. See [Known gaps](#known-gaps) for what has not been run.
 

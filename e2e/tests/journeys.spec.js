@@ -94,7 +94,10 @@ test.describe('E2E-01 entry screens and sign-in', () => {
     await page.reload();
     await expect(page.getByText(/Good (morning|afternoon|evening), Arjun/)).toBeVisible();
     await page.goto('/student/settings');
-    await page.getByRole('button', { name: /Sign out/ }).click();
+    await page
+      .getByRole('button', { name: /Sign out/ })
+      .first()
+      .click();
     await page.goto('/student/dashboard');
     await expect(page).toHaveURL(/\/$/);
     await context.close();
@@ -141,16 +144,16 @@ test.describe('E2E-02 student registration', () => {
     await expect(page.getByRole('button', { name: /Fully booked/ })).toBeDisabled();
 
     await page.goto('/student/clubs');
-    const card = page.locator('article', { hasText: 'Campus Code Collective' });
+    const card = page.locator('article', { hasText: 'Amrita CodeChef Chapter' });
     await card.getByRole('button', { name: /favourites/ }).click();
     await page.reload();
     await expect(
       page
-        .locator('article', { hasText: 'Campus Code Collective' })
+        .locator('article', { hasText: 'Amrita CodeChef Chapter' })
         .getByRole('button', { name: /Remove .* from favourites/ }),
     ).toBeVisible();
     await page
-      .locator('article', { hasText: 'Campus Code Collective' })
+      .locator('article', { hasText: 'Amrita CodeChef Chapter' })
       .getByRole('button', { name: /Remove .* from favourites/ })
       .click(); // put it back
     await context.close();
@@ -172,7 +175,7 @@ test.describe('E2E-03 the approval path, role by role', () => {
     const title = `Prototype Showcase ${uniq()}`;
 
     // 1. Club Authority submits with a poster and documents
-    const club = await as(browser, 'club', /Innovation Club/);
+    const club = await as(browser, 'club', /Google Developer Student Clubs/);
     await club.page.goto('/club/requests/new');
     await fillRequestForm(club.page, title);
     await club.page.getByRole('button', { name: /Submit for review/ }).click();
@@ -261,7 +264,7 @@ test.describe('E2E-03 the approval path, role by role', () => {
     browser,
   }) => {
     const title = `Correction Night ${uniq()}`;
-    const club = await as(browser, 'club', /Innovation Club/);
+    const club = await as(browser, 'club', /Google Developer Student Clubs/);
     await club.page.goto('/club/requests/new');
     await fillRequestForm(club.page, title);
     await club.page.getByRole('button', { name: /Submit for review/ }).click();
@@ -297,7 +300,7 @@ test.describe('E2E-03 the approval path, role by role', () => {
   });
 
   test('a club cannot open another club’s request', async ({ browser }) => {
-    const other = await as(browser, 'club2', /Robotics Society/);
+    const other = await as(browser, 'club2', /Hut Labs/);
     await other.page.goto('/club/requests/REQ-1251');
     await expect(other.page.getByText('Request not available')).toBeVisible();
     await other.context.close();
@@ -328,7 +331,7 @@ test.describe('E2E-04 club applications and club profile', () => {
 
   test('a club edits its own profile and students see the new description', async ({ browser }) => {
     const text = `We build and ship campus prototypes ${uniq()}.`;
-    const club = await as(browser, 'club', /Innovation Club/);
+    const club = await as(browser, 'club', /Google Developer Student Clubs/);
     await club.page.goto('/club/profile');
     const desc = club.page.getByLabel(/^Description/);
     await desc.fill(text);
@@ -409,7 +412,7 @@ test.describe('E2E-05 every screen opens', () => {
 test.describe('E2E-07 chat and sign-out for every role', () => {
   for (const [who, home] of [
     ['student', /Good (morning|afternoon|evening), Arjun/],
-    ['club', /Innovation Club/],
+    ['club', /Google Developer Student Clubs/],
     ['osa', /Welcome back, Meera/],
   ]) {
     test(`${who}: the chat answers and Sign out ends the session`, async ({ browser }) => {

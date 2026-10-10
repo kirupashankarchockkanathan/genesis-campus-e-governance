@@ -430,7 +430,8 @@ export const SEED_REQUESTS = [
       venue: 'Innovation Lab',
       capacity: 70,
       attended: 61,
-      description: 'A relaxed idea jam to welcome first-year students into the Innovation Club.',
+      description:
+        'A relaxed idea jam to welcome first-year students into the Google Developer Student Clubs (GDSC).',
     },
     {
       id: 'REQ-0971',
@@ -621,10 +622,10 @@ export const SEED_CLUB_APPLICATIONS = [
   },
   {
     id: 'CA-503',
-    name: 'Campus Coding Hub',
+    name: 'CodeChef Coding Hub',
     category: 'Coding',
     objectives:
-      'Learn in public through weekly coding sessions, ship open source campus tools together and run beginner programming programmes.',
+      'Run competitive programming practice, problem-solving contests and weekly coding sessions, and ship open source campus tools together.',
     description: 'A hub for coders to collaborate.',
     proposer: { name: 'Vihaan Reddy', rollNo: 'STU25301', dept: 'IT', email: 'vihaan.reddy@genesis.edu' },
     advisor: 'Prof. Anil Kapoor',

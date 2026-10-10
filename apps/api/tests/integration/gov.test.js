@@ -387,7 +387,7 @@ describe('club applications and the duplicate check', () => {
       note: 'Welcome',
     });
     expect(ok.body.data.ok).toBe(true);
-    expect(ok.body.data.state.newClubs.map((c) => c.name)).toContain('Campus Coding Hub');
+    expect(ok.body.data.state.newClubs.map((c) => c.name)).toContain('CodeChef Coding Hub');
     // the Events Section can run the check but cannot decide
     expect((await events.act('saveAiCheck', 'CA-502', {})).body.data.ok).toBe(true);
     expect(
@@ -402,7 +402,7 @@ describe('club applications and the duplicate check', () => {
     const osa = await session('OSA001');
     const student = await session('STU2026001');
     const app503 = {
-      name: 'Campus Coding Hub',
+      name: 'CodeChef Coding Hub',
       category: 'Coding',
       objectives: 'Weekly coding sessions, open source and beginner programming programmes.',
     };

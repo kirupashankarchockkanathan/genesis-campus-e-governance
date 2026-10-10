@@ -2,6 +2,10 @@
 
 All notable changes, newest first. One line per completed task (spec section 0, rule 9).
 
+## 1.4.0
+
+- Club directory replaced with the team's 26 Amrita clubs in four groups; sample data renamed to match.
+
 ## 1.3.0
 
 - Floating chat for student, club and administrator roles (`POST /ai/chat`, role-scoped data, conversation history); Sign out button in every sidebar.

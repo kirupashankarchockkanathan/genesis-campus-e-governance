@@ -61,7 +61,7 @@ export function localDuplicateCheck(application, existingClubs, objectivesOf = (
     .map((c) => {
       const nameScore = jaccard(nameT, tokens(c.name));
       const objScore = jaccard(objT, tokens(`${c.blurb} ${objectivesOf(c)}`));
-      const sameCategory = c.category === application.category ? 1 : 0;
+      const sameCategory = c.category === application.category || c.tag === application.category ? 1 : 0;
       const score = Math.min(1, 0.45 * nameScore + 0.4 * Math.min(1, objScore * 2.2) + 0.15 * sameCategory);
       const reasons = [];
       if (nameScore > 0.25) reasons.push('Similar club name');
@@ -124,7 +124,7 @@ export function localAssistant(question, { events = [], clubs = [], todayISO }) 
       return `Approved hackathons coming up: ${list(h)}. Open to all current students — no prior experience needed. Check the event page for the registration deadline.`;
   }
   if (/robotic/.test(t)) {
-    const c = clubs.filter((x) => /robot/i.test(`${x.name} ${x.category}`));
+    const c = clubs.filter((x) => /robot/i.test(`${x.name} ${x.category} ${x.blurb} ${x.tag}`));
     if (c.length)
       return `${c.map((x) => `${x.name} (${x.members} members, ${x.upcoming} upcoming event${x.upcoming === 1 ? '' : 's'})`).join('; ')} focuses on robotics.`;
   }
