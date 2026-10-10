@@ -1,0 +1,28 @@
+{
+  "name": "campus-clubs-portal",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": ["apps/*", "packages/*"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "concurrently -n api,web -c red,white \"npm run dev -w apps/api\" \"npm run dev -w apps/web\"",
+    "db:migrate": "npm run db:migrate -w apps/api",
+    "db:rollback": "npm run db:rollback -w apps/api",
+    "db:seed": "npm run db:seed -w apps/api",
+    "db:reset": "npm run db:reset -w apps/api",
+    "test": "npm test -w packages/shared && npm test -w apps/api && npm test -w apps/web",
+    "test:pg": "npm run test:pg -w apps/api",
+    "test:e2e": "echo \"E2E (Playwright) is planned for Phase 1+\"",
+    "lint": "eslint . && prettier --check ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "concurrently": "^9.0.0",
+    "eslint": "^9.0.0",
+    "eslint-plugin-react": "^7.37.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "globals": "^15.0.0",
+    "prettier": "^3.3.0"
+  }
+}
