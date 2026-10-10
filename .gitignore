@@ -1,0 +1,12 @@
+node_modules/
+.env
+*.sqlite
+*.sqlite-journal
+apps/api/data/
+apps/api/uploads/*
+!apps/api/uploads/.gitkeep
+dist/
+coverage/
+.vite/
+*.log
+.DS_Store
