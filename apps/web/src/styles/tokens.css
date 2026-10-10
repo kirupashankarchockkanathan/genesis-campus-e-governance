@@ -1,0 +1,96 @@
+/* Design tokens: red and white theme (spec 13.1). Never write a raw colour in a component. */
+:root {
+  --brand: #b01227;
+  --brand-hover: color-mix(in srgb, var(--brand), #000 14%);
+  --on-brand: #ffffff;
+  --accent: #b01227;
+  --banner-a: #c4182f;
+  --banner-b: #8f0c20;
+  --side: #7e0a1b;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #fff5f6;
+  --tint: #fde7ea;
+  --ink: #2a1114;
+  --ink-2: #6f5256;
+  --line: #f1dadd;
+  --line-strong: #e4bec4;
+  --ok: #17744a;
+  --ok-bg: #e3f4eb;
+  --warn: #8a5200;
+  --warn-bg: #fff0d2;
+  --bad: #b3261e;
+  --bad-bg: #fce8e6;
+  --focus: #1a56db;
+  --overlay: rgba(42, 17, 20, 0.45);
+
+  --s1: 4px;
+  --s2: 8px;
+  --s3: 12px;
+  --s4: 16px;
+  --s5: 24px;
+  --s6: 32px;
+  --s7: 48px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 16px;
+  --r-pill: 999px;
+  --e1: 0 1px 2px rgba(80, 15, 25, 0.07);
+  --e2: 0 2px 4px rgba(80, 15, 25, 0.06), 0 8px 24px rgba(80, 15, 25, 0.08);
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --side-w: 252px;
+  --content-w: 1080px;
+  --topbar-h: 60px;
+  --tabbar-h: 64px;
+}
+
+/* Dark theme: same tokens redefined. Follows the system unless the user picks a theme. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --brand: #c72c43;
+    --accent: #ff8e9c;
+    --bg: #140d0e;
+    --surface: #1e1416;
+    --surface-2: #281b1e;
+    --tint: #3a1f25;
+    --ink: #f7eced;
+    --ink-2: #c9aeb2;
+    --line: #38262a;
+    --line-strong: #4d3338;
+    --side: #3f0a13;
+    --banner-a: #8e1829;
+    --banner-b: #5a0f1b;
+    --ok: #6fd3a0;
+    --ok-bg: #12301f;
+    --warn: #f3c46b;
+    --warn-bg: #3a2a0c;
+    --bad: #ff9a92;
+    --bad-bg: #3b1613;
+    --focus: #8ab4ff;
+    --overlay: rgba(0, 0, 0, 0.6);
+  }
+}
+:root[data-theme='dark'] {
+  --brand: #c72c43;
+  --accent: #ff8e9c;
+  --bg: #140d0e;
+  --surface: #1e1416;
+  --surface-2: #281b1e;
+  --tint: #3a1f25;
+  --ink: #f7eced;
+  --ink-2: #c9aeb2;
+  --line: #38262a;
+  --line-strong: #4d3338;
+  --side: #3f0a13;
+  --banner-a: #8e1829;
+  --banner-b: #5a0f1b;
+  --ok: #6fd3a0;
+  --ok-bg: #12301f;
+  --warn: #f3c46b;
+  --warn-bg: #3a2a0c;
+  --bad: #ff9a92;
+  --bad-bg: #3b1613;
+  --focus: #8ab4ff;
+  --overlay: rgba(0, 0, 0, 0.6);
+}

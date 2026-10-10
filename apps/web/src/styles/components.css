@@ -1,0 +1,248 @@
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s2);
+  min-height: 44px;
+  padding: 0 var(--s4);
+  border-radius: var(--r-md);
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--brand);
+  color: var(--on-brand);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--brand-hover);
+}
+.btn-secondary {
+  background: var(--surface);
+  color: var(--brand);
+  border-color: var(--brand);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--tint);
+}
+.btn-light {
+  background: var(--on-brand);
+  color: var(--brand-hover);
+}
+.btn-danger {
+  background: var(--bad);
+  color: var(--on-brand);
+}
+.btn-link {
+  background: none;
+  color: var(--brand);
+  text-decoration: underline;
+  min-height: 0;
+  padding: 0;
+}
+
+/* ---------- Cards, banner ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--e1);
+  padding: var(--s5);
+}
+.card-link {
+  text-decoration: none;
+  color: inherit;
+  display: grid;
+  gap: var(--s3);
+}
+.card-link:hover {
+  border-color: var(--line-strong);
+  box-shadow: var(--e2);
+}
+.banner {
+  background: linear-gradient(120deg, var(--banner-a), var(--banner-b));
+  color: var(--on-brand);
+  border-radius: var(--r-lg);
+  padding: var(--s6) var(--s5);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s4);
+  align-items: center;
+  justify-content: space-between;
+}
+.banner h1 {
+  font-size: 2rem;
+}
+.banner p {
+  opacity: 0.92;
+  max-width: 60ch;
+}
+
+/* ---------- Form fields ---------- */
+.field {
+  display: grid;
+  gap: var(--s1);
+}
+.field label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.field .help {
+  color: var(--ink-2);
+  font-size: 0.85rem;
+}
+.field .error {
+  color: var(--bad);
+  font-size: 0.85rem;
+}
+.input,
+.select {
+  min-height: 44px;
+  padding: 0 var(--s3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  color: var(--ink);
+  font: inherit;
+  width: 100%;
+}
+.input[aria-invalid='true'] {
+  border-color: var(--bad);
+}
+
+/* ---------- Pills: dot + text label, never colour alone (NFR-03) ---------- */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: 2px var(--s3);
+  border-radius: var(--r-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--tint);
+  color: var(--ink);
+}
+.pill::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.pill-ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+.pill-warn {
+  background: var(--warn-bg);
+  color: var(--warn);
+}
+.pill-bad {
+  background: var(--bad-bg);
+  color: var(--bad);
+}
+
+/* ---------- Avatar ---------- */
+.avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-md);
+  background: var(--tint);
+  color: var(--brand);
+  font-weight: 700;
+}
+
+/* ---------- Notices ---------- */
+.notice {
+  padding: var(--s3) var(--s4);
+  border-radius: var(--r-md);
+  border: 1px solid var(--line-strong);
+  background: var(--surface-2);
+}
+.notice-bad {
+  background: var(--bad-bg);
+  color: var(--bad);
+  border-color: var(--bad);
+}
+.notice-ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+  border-color: var(--ok);
+}
+.empty {
+  text-align: center;
+  padding: var(--s7) var(--s5);
+  color: var(--ink-2);
+}
+.skeleton {
+  height: 96px;
+  border-radius: var(--r-lg);
+  background: linear-gradient(90deg, var(--surface-2), var(--tint), var(--surface-2));
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---------- Auth screens ---------- */
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+.auth-hero {
+  background: linear-gradient(160deg, var(--banner-a), var(--banner-b));
+  color: var(--on-brand);
+  padding: var(--s7);
+  display: grid;
+  align-content: center;
+  gap: var(--s4);
+}
+.auth-hero h1 {
+  font-size: 2.6rem;
+}
+.auth-panel {
+  display: grid;
+  place-items: center;
+  padding: var(--s5) var(--s4);
+}
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  display: grid;
+  gap: var(--s4);
+}
+@media (max-width: 900px) {
+  .auth-page {
+    grid-template-columns: 1fr;
+  }
+  .auth-hero {
+    padding: var(--s5) var(--s4);
+  }
+  .auth-hero h1 {
+    font-size: 1.8rem;
+  }
+}
+
+/* Card headers: avatar + title stay on one line; title scale is consistent. */
+.card .row {
+  flex-wrap: nowrap;
+}
+.card h2 {
+  font-size: 1.25rem;
+}

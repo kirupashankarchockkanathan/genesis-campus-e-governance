@@ -1,0 +1,208 @@
+/* AppShell: sidebar (252px) + main. Below 900px the sidebar becomes a bottom tab bar (spec 13.2). */
+.shell {
+  display: grid;
+  grid-template-columns: var(--side-w) minmax(0, 1fr);
+  min-height: 100vh;
+}
+.sidebar {
+  background: var(--side);
+  color: var(--on-brand);
+  padding: var(--s5) var(--s3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s4);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: 0 var(--s3);
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  color: var(--on-brand);
+  text-decoration: none;
+}
+.brand-mark {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--r-md);
+  background: var(--on-brand);
+  color: var(--brand);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-family: var(--font-body);
+}
+.nav {
+  display: grid;
+  gap: var(--s1);
+}
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  min-height: 44px;
+  padding: 0 var(--s3);
+  border-radius: var(--r-md);
+  color: var(--on-brand);
+  text-decoration: none;
+  opacity: 0.88;
+}
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  opacity: 1;
+}
+.nav-link[aria-current='page'] {
+  background: var(--on-brand);
+  color: var(--brand);
+  font-weight: 700;
+  opacity: 1;
+}
+.nav-heading {
+  padding: 0 var(--s3);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  opacity: 0.7;
+}
+.sidebar :focus-visible {
+  outline-color: var(--on-brand);
+}
+.main {
+  display: grid;
+  grid-template-rows: var(--topbar-h) 1fr;
+  min-width: 0;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s3);
+  padding: 0 var(--s5);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  margin-left: auto;
+}
+.icon-btn {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  text-decoration: none;
+}
+.icon-btn:hover {
+  background: var(--tint);
+}
+.badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: var(--r-pill);
+  background: var(--brand);
+  color: var(--on-brand);
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+}
+.content {
+  width: 100%;
+  max-width: var(--content-w);
+  margin: 0 auto;
+  padding: var(--s5);
+  display: grid;
+  gap: var(--s5);
+  align-content: start;
+}
+.topbar-brand {
+  display: none;
+}
+.tabbar {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    display: none;
+  }
+  .topbar {
+    background: var(--brand);
+    color: var(--on-brand);
+    border-bottom: 0;
+    padding: 0 var(--s4);
+  }
+  .topbar-brand {
+    display: inline-flex;
+    color: var(--on-brand);
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    text-decoration: none;
+  }
+  .topbar .icon-btn {
+    background: transparent;
+    color: var(--on-brand);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+  .content {
+    padding: var(--s4);
+    padding-bottom: calc(var(--tabbar-h) + var(--s5));
+  }
+  .tabbar {
+    display: flex;
+    position: fixed;
+    inset: auto 0 0 0;
+    height: var(--tabbar-h);
+    background: var(--side);
+    z-index: 20;
+    overflow-x: auto;
+  }
+  .tabbar a {
+    flex: 1 0 72px;
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 2px;
+    font-size: 0.7rem;
+    color: var(--on-brand);
+    text-decoration: none;
+    opacity: 0.85;
+    padding: 0 var(--s2);
+    text-align: center;
+  }
+  .tabbar a[aria-current='page'] {
+    opacity: 1;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.16);
+  }
+  .tabbar :focus-visible {
+    outline-color: var(--on-brand);
+  }
+}
+
+@media (max-width: 900px) {
+  .topbar .muted {
+    color: var(--on-brand);
+    opacity: 0.9;
+  }
+}
