@@ -12,11 +12,13 @@ export class AppError extends Error {
 export const errors = {
   validation: (message = 'The request is not valid.', details) =>
     new AppError(ERROR_CODES.VALIDATION_ERROR, message, details),
-  unauthenticated: (message = 'Please log in to continue.') => new AppError(ERROR_CODES.UNAUTHENTICATED, message),
+  unauthenticated: (message = 'Please log in to continue.') =>
+    new AppError(ERROR_CODES.UNAUTHENTICATED, message),
   forbidden: (message = 'You do not have permission to do this.', details) =>
     new AppError(ERROR_CODES.FORBIDDEN, message, details),
   notFound: (message = 'We could not find that.') => new AppError(ERROR_CODES.NOT_FOUND, message),
-  conflict: (message = 'That already exists.', details) => new AppError(ERROR_CODES.CONFLICT, message, details),
+  conflict: (message = 'That already exists.', details) =>
+    new AppError(ERROR_CODES.CONFLICT, message, details),
   invalidState: (message = 'That is not allowed in the current state.') =>
     new AppError(ERROR_CODES.INVALID_STATE, message),
   rateLimited: (message = 'Too many attempts. Please try again later.', details) =>

@@ -10,5 +10,7 @@ export const ipRateLimit = ({ windowMs = 60 * 60 * 1000, max = config.RATE_LIMIT
     standardHeaders: true,
     legacyHeaders: false,
     handler: (_req, res) =>
-      res.status(429).json({ error: { code: ERROR_CODES.RATE_LIMITED, message: 'Too many requests. Please try again later.' } }),
+      res.status(429).json({
+        error: { code: ERROR_CODES.RATE_LIMITED, message: 'Too many requests. Please try again later.' },
+      }),
   });

@@ -8,7 +8,10 @@ import { createUser, createClub, addMemberWithRole } from '../factories/index.js
 let knex;
 let app;
 const API = '/api/v1';
-const probe = (token, clubId, permission) => request(app).get(`${API}/_probe/club/${clubId}/${encodeURIComponent(permission)}`).set(bearer(token));
+const probe = (token, clubId, permission) =>
+  request(app)
+    .get(`${API}/_probe/club/${clubId}/${encodeURIComponent(permission)}`)
+    .set(bearer(token));
 
 beforeAll(async () => {
   knex = await createTestDb();
@@ -70,13 +73,20 @@ describe('club scope', () => {
     const mediaToken = await loginAs(app, media);
     expect((await probe(mediaToken, club.id, 'announcement.post')).status).toBe(200);
 
-    const changed = await request(app).patch(`${API}/clubs/${club.id}/members/${media.id}`).set(bearer(leaderToken)).send({ roleKey: 'MEMBER' });
+    const changed = await request(app)
+      .patch(`${API}/clubs/${club.id}/members/${media.id}`)
+      .set(bearer(leaderToken))
+      .send({ roleKey: 'MEMBER' });
     expect(changed.status).toBe(200);
     expect((await probe(mediaToken, club.id, 'announcement.post')).status).toBe(403);
 
-    const removed = await request(app).delete(`${API}/clubs/${club.id}/members/${media.id}`).set(bearer(leaderToken));
+    const removed = await request(app)
+      .delete(`${API}/clubs/${club.id}/members/${media.id}`)
+      .set(bearer(leaderToken));
     expect(removed.status).toBe(200);
-    expect((await request(app).get(`${API}/clubs/${club.id}/members`).set(bearer(mediaToken))).status).toBe(403);
+    expect((await request(app).get(`${API}/clubs/${club.id}/members`).set(bearer(mediaToken))).status).toBe(
+      403,
+    );
   });
 
   it('TC-RBAC-10 table-driven: every club role x every permission matches the matrix', async () => {
@@ -91,7 +101,8 @@ describe('club scope', () => {
       for (const permission of PERMISSION_KEYS) {
         const expected = DEFAULT_ROLE_PERMISSIONS[role].includes(permission) ? 200 : 403;
         const res = await probe(tokens[role], club.id, permission);
-        if (res.status !== expected) mismatches.push(`${role} / ${permission}: expected ${expected}, got ${res.status}`);
+        if (res.status !== expected)
+          mismatches.push(`${role} / ${permission}: expected ${expected}, got ${res.status}`);
       }
     }
     expect(mismatches).toEqual([]);
@@ -112,7 +123,8 @@ describe('club scope', () => {
     const t = await loginAs(app, await addMemberWithRole(knex, club, 'MEDIA_LEAD'));
     expect((await probe(t, club.id, 'announcement.post')).status).toBe(200);
     expect((await probe(t, club.id, 'event.poster.upload')).status).toBe(200);
-    for (const p of ['event.draft', 'form.manage', 'hall.request']) expect((await probe(t, club.id, p)).status).toBe(403);
+    for (const p of ['event.draft', 'form.manage', 'hall.request'])
+      expect((await probe(t, club.id, p)).status).toBe(403);
   });
 
   it('TC-RBAC-08 Secretary: recruitment and review allowed; member.manage denied', async () => {
@@ -129,12 +141,17 @@ describe('leadership and /me', () => {
     const club = await createClub(knex);
     const vice = await addMemberWithRole(knex, club, 'VICE_LEADER');
     const leaderToken = await loginAs(app, club.leader);
-    const res = await request(app).post(`${API}/clubs/${club.id}/leadership-transfer`).set(bearer(leaderToken)).send({ toUserId: vice.id });
+    const res = await request(app)
+      .post(`${API}/clubs/${club.id}/leadership-transfer`)
+      .set(bearer(leaderToken))
+      .send({ toUserId: vice.id });
     expect(res.status).toBe(200);
     expect((await probe(await loginAs(app, vice), club.id, 'event.submit')).status).toBe(200);
     expect((await probe(leaderToken, club.id, 'event.submit')).status).toBe(403);
     const leaderRole = await knex('club_roles').where({ club_id: club.id, key: 'LEADER' }).first();
-    expect(await knex('club_members').where({ club_id: club.id, club_role_id: leaderRole.id, status: 'active' })).toHaveLength(1);
+    expect(
+      await knex('club_members').where({ club_id: club.id, club_role_id: leaderRole.id, status: 'active' }),
+    ).toHaveLength(1);
   });
 
   it('TC-RBAC-12 a Vice Leader cannot transfer leadership or remove the Leader', async () => {
@@ -142,9 +159,25 @@ describe('leadership and /me', () => {
     const vice = await addMemberWithRole(knex, club, 'VICE_LEADER');
     const member = await addMemberWithRole(knex, club, 'MEMBER');
     const t = await loginAs(app, vice);
-    expect((await request(app).post(`${API}/clubs/${club.id}/leadership-transfer`).set(bearer(t)).send({ toUserId: member.id })).status).toBe(403);
-    expect((await request(app).delete(`${API}/clubs/${club.id}/members/${club.leader.id}`).set(bearer(t))).status).toBe(403);
-    expect((await request(app).patch(`${API}/clubs/${club.id}/members/${club.leader.id}`).set(bearer(t)).send({ roleKey: 'MEMBER' })).status).toBe(403);
+    expect(
+      (
+        await request(app)
+          .post(`${API}/clubs/${club.id}/leadership-transfer`)
+          .set(bearer(t))
+          .send({ toUserId: member.id })
+      ).status,
+    ).toBe(403);
+    expect(
+      (await request(app).delete(`${API}/clubs/${club.id}/members/${club.leader.id}`).set(bearer(t))).status,
+    ).toBe(403);
+    expect(
+      (
+        await request(app)
+          .patch(`${API}/clubs/${club.id}/members/${club.leader.id}`)
+          .set(bearer(t))
+          .send({ roleKey: 'MEMBER' })
+      ).status,
+    ).toBe(403);
   });
 
   it('TC-RBAC-13 /me lists each club with its own role and permission keys', async () => {
@@ -152,8 +185,20 @@ describe('leadership and /me', () => {
     const b = await createClub(knex, { name: 'Beta Club' });
     const user = await addMemberWithRole(knex, a, 'SECRETARY');
     const role = await knex('club_roles').where({ club_id: b.id, key: 'MEDIA_LEAD' }).first();
-    await knex('club_members').insert({ id: 'm2-' + b.id, club_id: b.id, user_id: user.id, club_role_id: role.id, status: 'active', joined_at: 't', added_via: 'direct', created_at: 't', updated_at: 't' });
-    const res = await request(app).get(`${API}/me`).set(bearer(await loginAs(app, user)));
+    await knex('club_members').insert({
+      id: 'm2-' + b.id,
+      club_id: b.id,
+      user_id: user.id,
+      club_role_id: role.id,
+      status: 'active',
+      joined_at: 't',
+      added_via: 'direct',
+      created_at: 't',
+      updated_at: 't',
+    });
+    const res = await request(app)
+      .get(`${API}/me`)
+      .set(bearer(await loginAs(app, user)));
     expect(res.status).toBe(200);
     const byName = Object.fromEntries(res.body.data.memberships.map((m) => [m.club.name, m]));
     expect(byName['Alpha Club'].roleKey).toBe('SECRETARY');
@@ -170,13 +215,26 @@ describe('clubs API (FR-CLUB-01, FR-CLUB-04)', () => {
     const leader = await createUser(knex);
     const student = await createUser(knex);
     const body = { name: 'Chess Club', category: 'Other', description: 'Sample', leaderEmail: leader.email };
-    expect((await request(app).post(`${API}/clubs`).set(bearer(await loginAs(app, student))).send(body)).status).toBe(403);
-    const res = await request(app).post(`${API}/clubs`).set(bearer(await loginAs(app, osi))).send(body);
+    expect(
+      (
+        await request(app)
+          .post(`${API}/clubs`)
+          .set(bearer(await loginAs(app, student)))
+          .send(body)
+      ).status,
+    ).toBe(403);
+    const res = await request(app)
+      .post(`${API}/clubs`)
+      .set(bearer(await loginAs(app, osi)))
+      .send(body);
     expect(res.status).toBe(201);
     expect(res.body.data.slug).toBe('chess-club');
     const roles = await knex('club_roles').where({ club_id: res.body.data.id });
     expect(roles).toHaveLength(6);
-    const dup = await request(app).post(`${API}/clubs`).set(bearer(await loginAs(app, osi))).send(body);
+    const dup = await request(app)
+      .post(`${API}/clubs`)
+      .set(bearer(await loginAs(app, osi)))
+      .send(body);
     expect(dup.status).toBe(409);
   });
 

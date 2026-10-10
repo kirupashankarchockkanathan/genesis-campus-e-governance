@@ -5,7 +5,7 @@ import { createUser, createClub, addMemberWithRole } from '../factories/index.js
 import { toDb, fromDb, jsonToDb, jsonFromDb } from '../../src/db/helpers.js';
 import { overrideConfig } from '../../src/config/index.js';
 import { transferLeadership, addMember } from '../../src/modules/members/members.service.js';
-import { seedHalls, seedClubs, seedAdmins, seedSample } from '../../src/db/seeding/index.js';
+import { seedHalls, seedClubs, seedAdmins, seedSample, SAMPLE_CLUBS } from '../../src/db/seeding/index.js';
 import { newId } from '../../src/lib/ids.js';
 
 let knex;
@@ -21,24 +21,36 @@ beforeEach(async () => {
 
 const tables = async () =>
   knex.client.config.client === 'pg'
-    ? (await knex.raw("select tablename as name from pg_tables where schemaname='public'")).rows.map((r) => r.name)
-    : (await knex.raw("select name from sqlite_master where type='table' and name not like 'sqlite_%'")).map((r) => r.name);
+    ? (await knex.raw("select tablename as name from pg_tables where schemaname='public'")).rows.map(
+        (r) => r.name,
+      )
+    : (await knex.raw("select name from sqlite_master where type='table' and name not like 'sqlite_%'")).map(
+        (r) => r.name,
+      );
 
 describe('migrations', () => {
   it('TC-DB-01 all Phase 0 tables exist', async () => {
     const t = await tables();
-    for (const name of ['users', 'auth_tokens', 'refresh_tokens', 'clubs', 'club_roles', 'club_role_permissions', 'club_members', 'favorite_clubs', 'audit_logs', 'halls'])
+    for (const name of [
+      'users',
+      'auth_tokens',
+      'refresh_tokens',
+      'clubs',
+      'club_roles',
+      'club_role_permissions',
+      'club_members',
+      'favorite_clubs',
+      'audit_logs',
+      'halls',
+    ])
       expect(t).toContain(name);
   });
 
   it('TC-DB-02 rollback leaves an empty schema and migrates again', async () => {
-    const k = await createTestDb();
-    await k.migrate.rollback(undefined, true);
-    const left = (await k.raw("select name from sqlite_master where type='table' and name not like 'sqlite_%'")).map((r) => r.name);
-    expect(left.filter((n) => !n.startsWith('knex_'))).toEqual([]);
-    await k.migrate.latest();
-    expect(await k.schema.hasTable('users')).toBe(true);
-    await k.destroy();
+    await knex.migrate.rollback(undefined, true);
+    expect((await tables()).filter((n) => !n.startsWith('knex_'))).toEqual([]);
+    await knex.migrate.latest();
+    expect(await knex.schema.hasTable('users')).toBe(true);
   }, 30000);
 });
 
@@ -59,9 +71,21 @@ describe('users constraints', () => {
   it('TC-DB-06 invalid status values fail (users, clubs, club_members)', async () => {
     await expect(createUser(knex, { status: 'banned' })).rejects.toThrow();
     const u = await createUser(knex);
-    await expect(knex('clubs').insert({ id: newId(), slug: 'x', name: 'X', category: 'c', status: 'weird', created_at: 't', updated_at: 't' })).rejects.toThrow();
+    await expect(
+      knex('clubs').insert({
+        id: newId(),
+        slug: 'x',
+        name: 'X',
+        category: 'c',
+        status: 'weird',
+        created_at: 't',
+        updated_at: 't',
+      }),
+    ).rejects.toThrow();
     const club = await createClub(knex, { leader: u });
-    await expect(knex('club_members').where({ club_id: club.id }).update({ status: 'weird' })).rejects.toThrow();
+    await expect(
+      knex('club_members').where({ club_id: club.id }).update({ status: 'weird' }),
+    ).rejects.toThrow();
   });
 });
 
@@ -69,24 +93,48 @@ describe('foreign keys and uniqueness', () => {
   it('TC-DB-07 membership for a non-existent user or club fails', async () => {
     const club = await createClub(knex);
     const role = await knex('club_roles').where({ club_id: club.id, key: 'MEMBER' }).first();
-    const base = { id: newId(), club_role_id: role.id, status: 'active', joined_at: 't', added_via: 'direct', created_at: 't', updated_at: 't' };
-    await expect(knex('club_members').insert({ ...base, club_id: club.id, user_id: 'nope' })).rejects.toThrow();
+    const base = {
+      id: newId(),
+      club_role_id: role.id,
+      status: 'active',
+      joined_at: 't',
+      added_via: 'direct',
+      created_at: 't',
+      updated_at: 't',
+    };
+    await expect(
+      knex('club_members').insert({ ...base, club_id: club.id, user_id: 'nope' }),
+    ).rejects.toThrow();
     const u = await createUser(knex);
-    await expect(knex('club_members').insert({ ...base, id: newId(), club_id: 'nope', user_id: u.id })).rejects.toThrow();
+    await expect(
+      knex('club_members').insert({ ...base, id: newId(), club_id: 'nope', user_id: u.id }),
+    ).rejects.toThrow();
   });
   it('TC-DB-08 two memberships for the same club and user fail', async () => {
     const club = await createClub(knex);
     const u = await addMemberWithRole(knex, club, 'MEMBER');
     const role = await knex('club_roles').where({ club_id: club.id, key: 'MEMBER' }).first();
     await expect(
-      knex('club_members').insert({ id: newId(), club_id: club.id, user_id: u.id, club_role_id: role.id, status: 'active', joined_at: 't', added_via: 'direct', created_at: 't', updated_at: 't' }),
+      knex('club_members').insert({
+        id: newId(),
+        club_id: club.id,
+        user_id: u.id,
+        club_role_id: role.id,
+        status: 'active',
+        joined_at: 't',
+        added_via: 'direct',
+        created_at: 't',
+        updated_at: 't',
+      }),
     ).rejects.toThrow();
   });
   it('TC-DB-11 favouriting the same club twice fails', async () => {
     const club = await createClub(knex);
     const u = await createUser(knex);
     await knex('favorite_clubs').insert({ user_id: u.id, club_id: club.id, created_at: 't' });
-    await expect(knex('favorite_clubs').insert({ user_id: u.id, club_id: club.id, created_at: 't' })).rejects.toThrow();
+    await expect(
+      knex('favorite_clubs').insert({ user_id: u.id, club_id: club.id, created_at: 't' }),
+    ).rejects.toThrow();
   });
   it('TC-DB-15 hall with capacity 0 or duplicate name fails', async () => {
     const h = { building: 'b', is_active: 1, created_at: 't', updated_at: 't' };
@@ -123,7 +171,9 @@ describe('roles and permissions', () => {
     const roles = await knex('club_roles').where({ club_id: club.id });
     expect(roles.map((r) => r.key).sort()).toEqual([...CLUB_ROLE_KEYS].sort());
     for (const r of roles) {
-      const perms = (await knex('club_role_permissions').where({ club_role_id: r.id })).map((p) => p.permission).sort();
+      const perms = (await knex('club_role_permissions').where({ club_role_id: r.id }))
+        .map((p) => p.permission)
+        .sort();
       expect(perms).toEqual([...DEFAULT_ROLE_PERMISSIONS[r.key]].sort());
     }
   });
@@ -132,17 +182,33 @@ describe('roles and permissions', () => {
     const club = await createClub(knex);
     const vice = await addMemberWithRole(knex, club, 'VICE_LEADER');
     const leaderRole = await knex('club_roles').where({ club_id: club.id, key: 'LEADER' }).first();
-    const countLeaders = async () => Number((await knex('club_members').where({ club_id: club.id, club_role_id: leaderRole.id, status: 'active' }).count('* as c').first()).c);
+    const countLeaders = async () =>
+      Number(
+        (
+          await knex('club_members')
+            .where({ club_id: club.id, club_role_id: leaderRole.id, status: 'active' })
+            .count('* as c')
+            .first()
+        ).c,
+      );
     expect(await countLeaders()).toBe(1);
 
-    await expect(addMember(knex, { id: club.leader.id }, club.id, { email: vice.email, roleKey: CLUB_ROLES.LEADER })).rejects.toThrow();
+    await expect(
+      addMember(knex, { id: club.leader.id }, club.id, { email: vice.email, roleKey: CLUB_ROLES.LEADER }),
+    ).rejects.toThrow();
     expect(await countLeaders()).toBe(1);
 
     await transferLeadership(knex, { id: club.leader.id }, club.id, vice.id);
     expect(await countLeaders()).toBe(1);
-    const nowLeader = await knex('club_members').where({ club_id: club.id, club_role_id: leaderRole.id }).first();
+    const nowLeader = await knex('club_members')
+      .where({ club_id: club.id, club_role_id: leaderRole.id })
+      .first();
     expect(nowLeader.user_id).toBe(vice.id);
-    const oldRole = await knex('club_members as m').join('club_roles as r', 'r.id', 'm.club_role_id').where({ 'm.user_id': club.leader.id }).select('r.key').first();
+    const oldRole = await knex('club_members as m')
+      .join('club_roles as r', 'r.id', 'm.club_role_id')
+      .where({ 'm.user_id': club.leader.id })
+      .select('r.key')
+      .first();
     expect(oldRole.key).toBe('VICE_LEADER');
   });
 });
@@ -163,14 +229,20 @@ describe('seeds', () => {
   });
 
   it('TC-DB-16 running all seeds twice creates no duplicates', async () => {
-    overrideConfig({ SEED_SAMPLE: true, SEED_SAMPLE_PASSWORD: 'Sample-Pass-1!', SEED_SUPER_ADMIN_PASSWORD: 'Admin-Pass-1!', SEED_OSI_PASSWORD: 'Admin-Pass-2!', SEED_EVENTS_PASSWORD: 'Admin-Pass-3!' });
+    overrideConfig({
+      SEED_SAMPLE: true,
+      SEED_SAMPLE_PASSWORD: 'Sample-Pass-1!',
+      SEED_SUPER_ADMIN_PASSWORD: 'Admin-Pass-1!',
+      SEED_OSI_PASSWORD: 'Admin-Pass-2!',
+      SEED_EVENTS_PASSWORD: 'Admin-Pass-3!',
+    });
     await seedAll();
     const first = await counts();
     await seedAll();
     expect(await counts()).toEqual(first);
     expect(first.halls).toBe(6);
-    expect(first.clubs).toBe(8);
-    expect(first.roles).toBe(48);
+    expect(first.clubs).toBe(SAMPLE_CLUBS.length);
+    expect(first.roles).toBe(SAMPLE_CLUBS.length * 6);
     expect(first.users).toBe(3 + 7);
     expect(first.members).toBe(6);
     const admin = await knex('users').where({ platform_role: 'osi_admin' }).first();
@@ -178,7 +250,13 @@ describe('seeds', () => {
   });
 
   it('TC-DB-28 SEED_SAMPLE=false creates no sample students', async () => {
-    overrideConfig({ SEED_SAMPLE: false, SEED_SAMPLE_PASSWORD: 'Sample-Pass-1!', SEED_SUPER_ADMIN_PASSWORD: '', SEED_OSI_PASSWORD: '', SEED_EVENTS_PASSWORD: '' });
+    overrideConfig({
+      SEED_SAMPLE: false,
+      SEED_SAMPLE_PASSWORD: 'Sample-Pass-1!',
+      SEED_SUPER_ADMIN_PASSWORD: '',
+      SEED_OSI_PASSWORD: '',
+      SEED_EVENTS_PASSWORD: '',
+    });
     await seedAll();
     const c = await counts();
     expect(c.users).toBe(0);

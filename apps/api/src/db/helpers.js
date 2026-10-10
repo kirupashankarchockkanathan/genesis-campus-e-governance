@@ -23,4 +23,5 @@ export const jsonFromDb = (v, fallback = null) => {
 };
 
 export const isUniqueViolation = (err) =>
-  err?.code === '23505' || /UNIQUE constraint failed|SQLITE_CONSTRAINT_UNIQUE|SQLITE_CONSTRAINT_PRIMARYKEY/.test(err?.message ?? '');
+  err?.code === '23505' ||
+  /UNIQUE constraint failed|SQLITE_CONSTRAINT_UNIQUE|SQLITE_CONSTRAINT_PRIMARYKEY/.test(err?.message ?? '');

@@ -112,16 +112,28 @@ export async function insertClub(trx, data, { actorId = null, leaderUserId = nul
 export async function createClub(db, actor, input) {
   return db.transaction(async (trx) => {
     const leader = await trx('users').whereRaw('lower(email) = ?', [input.leaderEmail.toLowerCase()]).first();
-    if (!leader || leader.status !== USER_STATUS.ACTIVE) throw errors.validation('The chosen Leader was not found.');
-    if (leader.platform_role !== PLATFORM_ROLES.STUDENT) throw errors.validation('The Leader must be a student account.');
+    if (!leader || leader.status !== USER_STATUS.ACTIVE)
+      throw errors.validation('The chosen Leader was not found.');
+    if (leader.platform_role !== PLATFORM_ROLES.STUDENT)
+      throw errors.validation('The Leader must be a student account.');
     const { id } = await insertClub(trx, input, { actorId: actor.id, leaderUserId: leader.id });
-    await audit(trx, { actorId: actor.id, action: 'club.created', entityType: 'club', entityId: id, meta: { leaderId: leader.id } });
+    await audit(trx, {
+      actorId: actor.id,
+      action: 'club.created',
+      entityType: 'club',
+      entityId: id,
+      meta: { leaderId: leader.id },
+    });
     return getClub(trx, id);
   });
 }
 
 const memberCountSql = (db) =>
-  db('club_members').count('* as c').whereRaw('club_members.club_id = clubs.id').where('club_members.status', 'active').toSQL();
+  db('club_members')
+    .count('* as c')
+    .whereRaw('club_members.club_id = clubs.id')
+    .where('club_members.status', 'active')
+    .toSQL();
 
 export async function listClubs(db, { q, category } = {}) {
   const sub = memberCountSql(db);
@@ -132,7 +144,9 @@ export async function listClubs(db, { q, category } = {}) {
   if (category) query.where('category', category);
   if (q) {
     const like = `%${q.toLowerCase()}%`;
-    query.where((b) => b.whereRaw('lower(name) like ?', [like]).orWhereRaw('lower(description) like ?', [like]));
+    query.where((b) =>
+      b.whereRaw('lower(name) like ?', [like]).orWhereRaw('lower(description) like ?', [like]),
+    );
   }
   return (await query).map(clubDto);
 }
@@ -158,6 +172,9 @@ export async function listRoles(db, clubId) {
     key: r.key,
     name: r.name,
     isSystem: boolFromDb(r.is_system),
-    permissions: perms.filter((p) => p.club_role_id === r.id).map((p) => p.permission).sort(),
+    permissions: perms
+      .filter((p) => p.club_role_id === r.id)
+      .map((p) => p.permission)
+      .sort(),
   }));
 }

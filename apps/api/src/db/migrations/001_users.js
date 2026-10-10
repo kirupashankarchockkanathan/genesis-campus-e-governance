@@ -23,7 +23,11 @@ export async function up(knex) {
     // Case-insensitive uniqueness: values are stored lower-cased and the DB refuses anything else.
     t.check('?? = lower(??)', ['email', 'email'], 'users_email_lower');
     t.check('?? = lower(??)', ['username', 'username'], 'users_username_lower');
-    t.check('?? IS NULL OR (?? >= 1 AND ?? <= 6)', ['year_of_study', 'year_of_study', 'year_of_study'], 'users_year_range');
+    t.check(
+      '?? IS NULL OR (?? >= 1 AND ?? <= 6)',
+      ['year_of_study', 'year_of_study', 'year_of_study'],
+      'users_year_range',
+    );
   });
 }
 

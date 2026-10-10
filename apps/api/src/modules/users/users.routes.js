@@ -17,10 +17,20 @@ export async function buildMe(knex, userRow) {
     .join('clubs as c', 'c.id', 'm.club_id')
     .join('club_roles as r', 'r.id', 'm.club_role_id')
     .where({ 'm.user_id': userRow.id, 'm.status': 'active' })
-    .select('c.id as club_id', 'c.slug', 'c.name', 'r.id as role_id', 'r.key as role_key', 'r.name as role_name')
+    .select(
+      'c.id as club_id',
+      'c.slug',
+      'c.name',
+      'r.id as role_id',
+      'r.key as role_key',
+      'r.name as role_name',
+    )
     .orderBy('c.name');
   const perms = rows.length
-    ? await knex('club_role_permissions').whereIn('club_role_id', rows.map((r) => r.role_id))
+    ? await knex('club_role_permissions').whereIn(
+        'club_role_id',
+        rows.map((r) => r.role_id),
+      )
     : [];
   return {
     user: userDto(userRow),
@@ -29,14 +39,21 @@ export async function buildMe(knex, userRow) {
       club: { id: r.club_id, slug: r.slug, name: r.name },
       roleKey: r.role_key,
       roleName: r.role_name,
-      permissions: perms.filter((p) => p.club_role_id === r.role_id).map((p) => p.permission).sort(),
+      permissions: perms
+        .filter((p) => p.club_role_id === r.role_id)
+        .map((p) => p.permission)
+        .sort(),
     })),
   };
 }
 
 export const usersRouter = Router();
 
-usersRouter.get('/me', requireAuth(), wrap(async (req, res) => res.json({ data: await buildMe(db(req), req.user) })));
+usersRouter.get(
+  '/me',
+  requireAuth(),
+  wrap(async (req, res) => res.json({ data: await buildMe(db(req), req.user) })),
+);
 
 usersRouter.patch(
   '/me/profile',
@@ -51,7 +68,9 @@ usersRouter.patch(
     if (b.yearOfStudy !== undefined) patch.year_of_study = b.yearOfStudy;
     if (b.phone !== undefined) patch.phone = b.phone;
     if (Object.keys(patch).length) {
-      await db(req)('users').where({ id: req.user.id }).update({ ...patch, updated_at: toDb(clock.now()) });
+      await db(req)('users')
+        .where({ id: req.user.id })
+        .update({ ...patch, updated_at: toDb(clock.now()) });
     }
     // Username and email are never editable (FR-PROF-01).
     const fresh = await db(req)('users').where({ id: req.user.id }).first();
@@ -65,7 +84,10 @@ usersRouter.post(
   requireAuth({ allowMustChange: true }),
   validate({ body: changePasswordSchema }),
   wrap(async (req, res) => {
-    const result = await changePassword(db(req), req.user, req.body, { ip: req.ip, userAgent: req.get('user-agent') });
+    const result = await changePassword(db(req), req.user, req.body, {
+      ip: req.ip,
+      userAgent: req.get('user-agent'),
+    });
     setRefreshCookie(res, result.refresh);
     res.json({ data: { accessToken: result.accessToken, user: result.user } });
   }),

@@ -18,7 +18,9 @@ export const requireAuth =
       const user = await (req.app.locals.db ?? getDb())('users').where({ id: payload.sub }).first();
       if (!user || user.status !== USER_STATUS.ACTIVE) throw errors.unauthenticated();
       if (Number(user.must_change_password) === 1 && !allowMustChange) {
-        throw errors.forbidden('You must change your password before continuing.', { reason: 'PASSWORD_CHANGE_REQUIRED' });
+        throw errors.forbidden('You must change your password before continuing.', {
+          reason: 'PASSWORD_CHANGE_REQUIRED',
+        });
       }
       req.user = user;
       req.actor = { id: user.id, platformRole: user.platform_role };
@@ -63,7 +65,8 @@ export const requireClubPermission = (permission, resolveClubId = (req) => req.p
       const clubId = await resolveClubId(req, db);
       if (!clubId) throw errors.notFound('Club not found.');
       const membership = await loadMembership(db, req.user.id, clubId);
-      if (!membership || (permission !== null && !membership.permissions.includes(permission))) throw errors.forbidden();
+      if (!membership || (permission !== null && !membership.permissions.includes(permission)))
+        throw errors.forbidden();
       req.clubId = clubId;
       req.membership = membership;
       next();

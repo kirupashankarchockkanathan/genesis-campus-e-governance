@@ -5,7 +5,13 @@ import { getDb } from '../../db/knex.js';
 import { requireAuth, requireClubPermission, requirePlatformRole } from '../../middleware/auth.js';
 import { validate } from '../../middleware/validate.js';
 import { createClub, getClub, listClubs, listRoles } from './clubs.service.js';
-import { addMember, changeRole, listMembers, removeMember, transferLeadership } from '../members/members.service.js';
+import {
+  addMember,
+  changeRole,
+  listMembers,
+  removeMember,
+  transferLeadership,
+} from '../members/members.service.js';
 import { errors } from '../../lib/errors.js';
 
 const wrap = (fn) => (req, res, next) => fn(req, res).catch(next);
@@ -19,19 +25,30 @@ const createClubSchema = z.object({
   facultyCoordinator: z.string().trim().max(120).optional(),
   leaderEmail: emailSchema,
 });
-const listQuery = z.object({ q: z.string().trim().max(100).optional(), category: z.string().trim().max(60).optional() });
+const listQuery = z.object({
+  q: z.string().trim().max(100).optional(),
+  category: z.string().trim().max(60).optional(),
+});
 const addMemberSchema = z.object({ email: emailSchema, roleKey: z.enum(CLUB_ROLE_KEYS).optional() });
 const roleSchema = z.object({ roleKey: z.enum(CLUB_ROLE_KEYS) });
 const transferSchema = z.object({ toUserId: z.string().min(1), demoteTo: z.enum(CLUB_ROLE_KEYS).optional() });
 
 /** Resolves a club id from a path segment that may be an id or a slug. */
-const clubIdFromParams = async (req, knex) => (await knex('clubs').where({ id: req.params.id }).orWhere({ slug: req.params.id }).first())?.id;
+const clubIdFromParams = async (req, knex) =>
+  (await knex('clubs').where({ id: req.params.id }).orWhere({ slug: req.params.id }).first())?.id;
 
 export const clubsRouter = Router();
 clubsRouter.use(requireAuth());
 
-clubsRouter.get('/', validate({ query: listQuery }), wrap(async (req, res) => res.json({ data: await listClubs(db(req), req.validatedQuery) })));
-clubsRouter.get('/:id', wrap(async (req, res) => res.json({ data: await getClub(db(req), req.params.id) })));
+clubsRouter.get(
+  '/',
+  validate({ query: listQuery }),
+  wrap(async (req, res) => res.json({ data: await listClubs(db(req), req.validatedQuery) })),
+);
+clubsRouter.get(
+  '/:id',
+  wrap(async (req, res) => res.json({ data: await getClub(db(req), req.params.id) })),
+);
 
 clubsRouter.post(
   '/',
@@ -41,20 +58,32 @@ clubsRouter.post(
 );
 
 // Roles: any active member of the club.
-clubsRouter.get('/:id/roles', requireClubPermission(null, clubIdFromParams), wrap(async (req, res) => res.json({ data: await listRoles(db(req), req.clubId) })));
-clubsRouter.get('/:id/members', requireClubPermission(null, clubIdFromParams), wrap(async (req, res) => res.json({ data: await listMembers(db(req), req.clubId) })));
+clubsRouter.get(
+  '/:id/roles',
+  requireClubPermission(null, clubIdFromParams),
+  wrap(async (req, res) => res.json({ data: await listRoles(db(req), req.clubId) })),
+);
+clubsRouter.get(
+  '/:id/members',
+  requireClubPermission(null, clubIdFromParams),
+  wrap(async (req, res) => res.json({ data: await listMembers(db(req), req.clubId) })),
+);
 
 clubsRouter.post(
   '/:id/members',
   requireClubPermission(PERMISSIONS.MEMBER_MANAGE, clubIdFromParams),
   validate({ body: addMemberSchema }),
-  wrap(async (req, res) => res.status(201).json({ data: await addMember(db(req), req.actor, req.clubId, req.body) })),
+  wrap(async (req, res) =>
+    res.status(201).json({ data: await addMember(db(req), req.actor, req.clubId, req.body) }),
+  ),
 );
 clubsRouter.patch(
   '/:id/members/:userId',
   requireClubPermission(PERMISSIONS.MEMBER_MANAGE, clubIdFromParams),
   validate({ body: roleSchema }),
-  wrap(async (req, res) => res.json({ data: await changeRole(db(req), req.actor, req.clubId, req.params.userId, req.body.roleKey) })),
+  wrap(async (req, res) =>
+    res.json({ data: await changeRole(db(req), req.actor, req.clubId, req.params.userId, req.body.roleKey) }),
+  ),
 );
 // Remove another member (needs member.manage) or leave the club yourself.
 clubsRouter.delete(
@@ -71,5 +100,9 @@ clubsRouter.post(
   '/:id/leadership-transfer',
   requireClubPermission(PERMISSIONS.LEADERSHIP_TRANSFER, clubIdFromParams),
   validate({ body: transferSchema }),
-  wrap(async (req, res) => res.json({ data: await transferLeadership(db(req), req.actor, req.clubId, req.body.toUserId, req.body.demoteTo) })),
+  wrap(async (req, res) =>
+    res.json({
+      data: await transferLeadership(db(req), req.actor, req.clubId, req.body.toUserId, req.body.demoteTo),
+    }),
+  ),
 );

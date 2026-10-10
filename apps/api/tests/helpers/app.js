@@ -8,9 +8,18 @@ export function buildTestApp(db) {
   return createApp({
     db,
     extraRoutes: (api) => {
-      api.get('/_probe/club/:clubId/:permission', requireAuth(), (req, res, next) => requireClubPermission(req.params.permission)(req, res, next), (req, res) => res.json({ data: { ok: true } }));
-      api.get('/_probe/osi', requireAuth(), requirePlatformRole('osi_admin'), (_req, res) => res.json({ data: { ok: true } }));
-      api.get('/_probe/events-admin', requireAuth(), requirePlatformRole('events_admin'), (_req, res) => res.json({ data: { ok: true } }));
+      api.get(
+        '/_probe/club/:clubId/:permission',
+        requireAuth(),
+        (req, res, next) => requireClubPermission(req.params.permission)(req, res, next),
+        (req, res) => res.json({ data: { ok: true } }),
+      );
+      api.get('/_probe/osi', requireAuth(), requirePlatformRole('osi_admin'), (_req, res) =>
+        res.json({ data: { ok: true } }),
+      );
+      api.get('/_probe/events-admin', requireAuth(), requirePlatformRole('events_admin'), (_req, res) =>
+        res.json({ data: { ok: true } }),
+      );
       api.get('/_probe/plain', requireAuth(), (_req, res) => res.json({ data: { ok: true } }));
     },
   });

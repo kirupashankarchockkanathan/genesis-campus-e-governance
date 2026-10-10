@@ -1,5 +1,11 @@
 import { Router } from 'express';
-import { emailOnlySchema, loginSchema, resetPasswordSchema, signupSchema, verifyEmailSchema } from '@ccp/shared';
+import {
+  emailOnlySchema,
+  loginSchema,
+  resetPasswordSchema,
+  signupSchema,
+  verifyEmailSchema,
+} from '@ccp/shared';
 import { config } from '../../config/index.js';
 import { getDb } from '../../db/knex.js';
 import { validate } from '../../middleware/validate.js';

@@ -37,7 +37,11 @@ export async function createClub(knex, { leader, name } = {}) {
   const n = uniq();
   const leaderUser = leader ?? (await createUser(knex));
   const result = await knex.transaction((trx) =>
-    insertClub(trx, { name: name ?? `Club ${n}`, category: 'Technology', description: 'test club' }, { leaderUserId: leaderUser.id }),
+    insertClub(
+      trx,
+      { name: name ?? `Club ${n}`, category: 'Technology', description: 'test club' },
+      { leaderUserId: leaderUser.id },
+    ),
   );
   return { ...result, leader: leaderUser };
 }
@@ -48,8 +52,15 @@ export async function addMemberWithRole(knex, club, roleKey, userOverrides = {})
   const role = await knex('club_roles').where({ club_id: club.id, key: roleKey }).first();
   const now = toDb(new Date());
   await knex('club_members').insert({
-    id: newId(), club_id: club.id, user_id: user.id, club_role_id: role.id, status: 'active',
-    joined_at: now, added_via: 'direct', created_at: now, updated_at: now,
+    id: newId(),
+    club_id: club.id,
+    user_id: user.id,
+    club_role_id: role.id,
+    status: 'active',
+    joined_at: now,
+    added_via: 'direct',
+    created_at: now,
+    updated_at: now,
   });
   return user;
 }

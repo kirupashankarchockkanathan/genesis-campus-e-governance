@@ -52,12 +52,16 @@ async function createAuthToken(db, userId, type, ttlMs) {
 
 /** Finds an unused, unexpired token and marks it used. Throws a generic validation error otherwise. */
 async function consumeAuthToken(trx, raw, type) {
-  const row = await trx('auth_tokens').where({ token_hash: sha256(raw), type }).first();
+  const row = await trx('auth_tokens')
+    .where({ token_hash: sha256(raw), type })
+    .first();
   const now = clock.now();
   if (!row || row.used_at || new Date(row.expires_at) <= now) {
     throw errors.validation('This link is invalid or has expired.');
   }
-  await trx('auth_tokens').where({ id: row.id }).update({ used_at: toDb(now) });
+  await trx('auth_tokens')
+    .where({ id: row.id })
+    .update({ used_at: toDb(now) });
   return row;
 }
 
@@ -66,7 +70,9 @@ async function consumeAuthToken(trx, raw, type) {
 export async function signup(db, input) {
   const domain = input.email.split('@')[1];
   if (!config.allowedEmailDomains.includes(domain)) {
-    throw errors.validation('Please use your college email address.', [{ path: 'email', message: 'Email domain is not allowed' }]);
+    throw errors.validation('Please use your college email address.', [
+      { path: 'email', message: 'Email domain is not allowed' },
+    ]);
   }
   const clash = await db('users').where({ email: input.email }).orWhere({ username: input.username }).first();
   if (clash) throw errors.conflict('An account with that email or username already exists.');
@@ -92,7 +98,8 @@ export async function signup(db, input) {
       updated_at: toDb(now),
     });
   } catch (err) {
-    if (isUniqueViolation(err)) throw errors.conflict('An account with that email or username already exists.');
+    if (isUniqueViolation(err))
+      throw errors.conflict('An account with that email or username already exists.');
     throw err;
   }
   if (!config.AUTO_VERIFY_EMAIL) {
@@ -105,7 +112,9 @@ export async function signup(db, input) {
 export async function verifyEmail(db, rawToken) {
   await db.transaction(async (trx) => {
     const row = await consumeAuthToken(trx, rawToken, AUTH_TOKEN_TYPE.VERIFY_EMAIL);
-    await trx('users').where({ id: row.user_id }).update({ email_verified_at: toDb(clock.now()), updated_at: toDb(clock.now()) });
+    await trx('users')
+      .where({ id: row.user_id })
+      .update({ email_verified_at: toDb(clock.now()), updated_at: toDb(clock.now()) });
   });
 }
 
@@ -113,7 +122,12 @@ export async function verifyEmail(db, rawToken) {
 export async function resendVerification(db, email) {
   const user = await db('users').where({ email }).first();
   if (!user || user.email_verified_at || user.status !== USER_STATUS.ACTIVE) return;
-  const raw = await createAuthToken(db, user.id, AUTH_TOKEN_TYPE.VERIFY_EMAIL, hours(LIMITS.VERIFY_TOKEN_HOURS));
+  const raw = await createAuthToken(
+    db,
+    user.id,
+    AUTH_TOKEN_TYPE.VERIFY_EMAIL,
+    hours(LIMITS.VERIFY_TOKEN_HOURS),
+  );
   await sendMail(verificationMail(user.email, raw));
 }
 
@@ -138,18 +152,27 @@ async function issueRefreshToken(db, userId, meta, familyId = newId()) {
 }
 
 export async function revokeFamily(db, familyId) {
-  await db('refresh_tokens').where({ family_id: familyId }).whereNull('revoked_at').update({ revoked_at: toDb(clock.now()) });
+  await db('refresh_tokens')
+    .where({ family_id: familyId })
+    .whereNull('revoked_at')
+    .update({ revoked_at: toDb(clock.now()) });
 }
 
 export async function revokeAllSessions(db, userId) {
-  await db('refresh_tokens').where({ user_id: userId }).whereNull('revoked_at').update({ revoked_at: toDb(clock.now()) });
+  await db('refresh_tokens')
+    .where({ user_id: userId })
+    .whereNull('revoked_at')
+    .update({ revoked_at: toDb(clock.now()) });
 }
 
 export async function login(db, { identifier, password }, meta = {}) {
   const key = `${identifier}|${meta.ip ?? ''}`;
   const wait = loginLimiter.retryAfter(key);
   if (wait > 0) {
-    const e = errors.rateLimited(`Too many failed attempts. Try again in ${Math.ceil(wait / 60)} minute(s).`, { retryAfterSeconds: wait });
+    const e = errors.rateLimited(
+      `Too many failed attempts. Try again in ${Math.ceil(wait / 60)} minute(s).`,
+      { retryAfterSeconds: wait },
+    );
     e.retryAfter = wait;
     throw e;
   }
@@ -158,27 +181,46 @@ export async function login(db, { identifier, password }, meta = {}) {
   if (!user || !ok) {
     const count = loginLimiter.fail(key);
     if (count >= LIMITS.LOGIN_MAX_FAILURES) {
-      await audit(db, { actorId: user?.id ?? null, action: 'auth.login_locked', entityType: 'user', entityId: user?.id ?? null, meta: { identifier }, ip: meta.ip });
+      await audit(db, {
+        actorId: user?.id ?? null,
+        action: 'auth.login_locked',
+        entityType: 'user',
+        entityId: user?.id ?? null,
+        meta: { identifier },
+        ip: meta.ip,
+      });
     }
     throw errors.unauthenticated(GENERIC_LOGIN_ERROR);
   }
-  if (user.status !== USER_STATUS.ACTIVE) throw errors.forbidden('This account has been suspended. Contact the administrators.');
-  if (!user.email_verified_at) throw errors.forbidden('Please verify your email before logging in. Check your inbox for the link.');
+  if (user.status !== USER_STATUS.ACTIVE)
+    throw errors.forbidden('This account has been suspended. Contact the administrators.');
+  if (!user.email_verified_at)
+    throw errors.forbidden('Please verify your email before logging in. Check your inbox for the link.');
 
   loginLimiter.clear(key);
-  await db('users').where({ id: user.id }).update({ last_login_at: toDb(clock.now()) });
+  await db('users')
+    .where({ id: user.id })
+    .update({ last_login_at: toDb(clock.now()) });
   const refresh = await issueRefreshToken(db, user.id, meta);
   return { accessToken: signAccessToken(user), refresh, user: userDto(user) };
 }
 
 export async function refresh(db, rawToken, meta = {}) {
   if (!rawToken) throw errors.unauthenticated();
-  const row = await db('refresh_tokens').where({ token_hash: sha256(rawToken) }).first();
+  const row = await db('refresh_tokens')
+    .where({ token_hash: sha256(rawToken) })
+    .first();
   if (!row) throw errors.unauthenticated();
   if (row.replaced_by_id) {
     // An already-rotated token is being reused: treat it as theft and revoke the whole family.
     await revokeFamily(db, row.family_id);
-    await audit(db, { actorId: row.user_id, action: 'auth.refresh_reuse', entityType: 'user', entityId: row.user_id, ip: meta.ip });
+    await audit(db, {
+      actorId: row.user_id,
+      action: 'auth.refresh_reuse',
+      entityType: 'user',
+      entityId: row.user_id,
+      ip: meta.ip,
+    });
     throw errors.unauthenticated();
   }
   if (row.revoked_at || new Date(row.expires_at) <= clock.now()) throw errors.unauthenticated();
@@ -187,7 +229,9 @@ export async function refresh(db, rawToken, meta = {}) {
 
   const next = await db.transaction(async (trx) => {
     const created = await issueRefreshToken(trx, user.id, meta, row.family_id);
-    await trx('refresh_tokens').where({ id: row.id }).update({ replaced_by_id: created.id, revoked_at: toDb(clock.now()) });
+    await trx('refresh_tokens')
+      .where({ id: row.id })
+      .update({ replaced_by_id: created.id, revoked_at: toDb(clock.now()) });
     return created;
   });
   return { accessToken: signAccessToken(user), refresh: next, user: userDto(user) };
@@ -195,7 +239,9 @@ export async function refresh(db, rawToken, meta = {}) {
 
 export async function logout(db, rawToken) {
   if (!rawToken) return;
-  const row = await db('refresh_tokens').where({ token_hash: sha256(rawToken) }).first();
+  const row = await db('refresh_tokens')
+    .where({ token_hash: sha256(rawToken) })
+    .first();
   if (row) await revokeFamily(db, row.family_id);
 }
 
@@ -204,7 +250,12 @@ export async function logout(db, rawToken) {
 export async function forgotPassword(db, email) {
   const user = await db('users').where({ email }).first();
   if (!user || user.status !== USER_STATUS.ACTIVE) return;
-  const raw = await createAuthToken(db, user.id, AUTH_TOKEN_TYPE.RESET_PASSWORD, hours(LIMITS.RESET_TOKEN_HOURS));
+  const raw = await createAuthToken(
+    db,
+    user.id,
+    AUTH_TOKEN_TYPE.RESET_PASSWORD,
+    hours(LIMITS.RESET_TOKEN_HOURS),
+  );
   await sendMail(resetMail(user.email, raw));
 }
 
@@ -213,9 +264,19 @@ export async function resetPassword(db, rawToken, newPassword) {
   await db.transaction(async (trx) => {
     const row = await consumeAuthToken(trx, rawToken, AUTH_TOKEN_TYPE.RESET_PASSWORD);
     const now = toDb(clock.now());
-    await trx('users').where({ id: row.user_id }).update({ password_hash: hash, must_change_password: 0, updated_at: now });
-    await trx('refresh_tokens').where({ user_id: row.user_id }).whereNull('revoked_at').update({ revoked_at: now });
-    await audit(trx, { actorId: row.user_id, action: 'auth.password_reset', entityType: 'user', entityId: row.user_id });
+    await trx('users')
+      .where({ id: row.user_id })
+      .update({ password_hash: hash, must_change_password: 0, updated_at: now });
+    await trx('refresh_tokens')
+      .where({ user_id: row.user_id })
+      .whereNull('revoked_at')
+      .update({ revoked_at: now });
+    await audit(trx, {
+      actorId: row.user_id,
+      action: 'auth.password_reset',
+      entityType: 'user',
+      entityId: row.user_id,
+    });
   });
 }
 
@@ -225,15 +286,27 @@ export async function resetPassword(db, rawToken, newPassword) {
  */
 export async function changePassword(db, user, { currentPassword, newPassword }, meta = {}) {
   if (!(await bcrypt.compare(currentPassword, user.password_hash))) {
-    throw errors.validation('Your current password is incorrect.', [{ path: 'currentPassword', message: 'Incorrect password' }]);
+    throw errors.validation('Your current password is incorrect.', [
+      { path: 'currentPassword', message: 'Incorrect password' },
+    ]);
   }
   if (newPassword.toLowerCase().includes(user.username)) {
-    throw errors.validation('Password must not contain your username.', [{ path: 'newPassword', message: 'Contains username' }]);
+    throw errors.validation('Password must not contain your username.', [
+      { path: 'newPassword', message: 'Contains username' },
+    ]);
   }
   const hash = await hashPassword(newPassword);
-  await db('users').where({ id: user.id }).update({ password_hash: hash, must_change_password: 0, updated_at: toDb(clock.now()) });
+  await db('users')
+    .where({ id: user.id })
+    .update({ password_hash: hash, must_change_password: 0, updated_at: toDb(clock.now()) });
   await revokeAllSessions(db, user.id);
-  await audit(db, { actorId: user.id, action: 'auth.password_changed', entityType: 'user', entityId: user.id, ip: meta.ip });
+  await audit(db, {
+    actorId: user.id,
+    action: 'auth.password_changed',
+    entityType: 'user',
+    entityId: user.id,
+    ip: meta.ip,
+  });
   const fresh = await db('users').where({ id: user.id }).first();
   const refreshToken = await issueRefreshToken(db, user.id, meta);
   return { accessToken: signAccessToken(fresh), refresh: refreshToken, user: userDto(fresh) };
