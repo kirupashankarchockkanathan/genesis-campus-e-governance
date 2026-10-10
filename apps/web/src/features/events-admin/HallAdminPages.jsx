@@ -463,10 +463,11 @@ export function AvailabilityPage() {
   const [w, setW] = useState({ from: '', to: '', minCapacity: 0 });
   const from = fromInputValue(w.from);
   const to = fromInputValue(w.to);
+  const ready = Boolean(from && to && to > from);
   const q = useGet(
     ['availability', from, to, w.minCapacity],
     `/halls/availability${qs({ from, to, minCapacity: w.minCapacity })}`,
-    { enabled: Boolean(from && to && to > from) },
+    { enabled: ready },
   );
   return (
     <>
@@ -492,23 +493,29 @@ export function AvailabilityPage() {
           onChange={(e) => setW({ ...w, minCapacity: e.target.value })}
         />
       </Card>
-      {!q.data && !q.isLoading && <p className="muted">Choose a start and end time to see availability.</p>}
-      <QueryState
-        query={q.data || q.isLoading || q.isError ? q : { isLoading: false, isError: false, data: [0] }}
-        isEmpty={(d) => !d?.length}
-      >
-        {(halls) => (
-          <ul className="hall-list">
-            {halls.map((h) => (
-              <li key={h.id} className="hall-card">
-                <strong>{h.name}</strong> <span className="muted small">seats {h.capacity}</span>{' '}
-                <span className={`pill ${h.free ? 'pill-ok' : 'pill-bad'}`}>{h.free ? 'Free' : 'Busy'}</span>
-                <AvailabilityTimeline hall={h} window={{ from, to }} />
-              </li>
-            ))}
-          </ul>
-        )}
-      </QueryState>
+      {!ready && <p className="muted">Choose a start and end time to see availability.</p>}
+      {ready && (
+        <QueryState
+          query={q}
+          isEmpty={(d) => !d?.length}
+          emptyTitle="No halls match"
+          emptyText="Lower the minimum capacity."
+        >
+          {(halls) => (
+            <ul className="hall-list">
+              {halls.map((h) => (
+                <li key={h.id} className="hall-card">
+                  <strong>{h.name}</strong> <span className="muted small">seats {h.capacity}</span>{' '}
+                  <span className={`pill ${h.free ? 'pill-ok' : 'pill-bad'}`}>
+                    {h.free ? 'Free' : 'Busy'}
+                  </span>
+                  <AvailabilityTimeline hall={h} window={{ from, to }} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </QueryState>
+      )}
     </>
   );
 }

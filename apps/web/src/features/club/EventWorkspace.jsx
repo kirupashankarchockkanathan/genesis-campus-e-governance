@@ -350,8 +350,8 @@ function FormTab({ ev, clubId, can }) {
       {draft && manage ? (
         <>
           <p className="muted">
-            Name, college email, roll number, department and year are filled from each student&apos;s profile. Add
-            only the extra questions you need.
+            Name, college email, roll number, department and year are filled from each student&apos;s profile.
+            Add only the extra questions you need.
           </p>
           <FormField
             label="Form title"
@@ -431,8 +431,8 @@ function FormTab({ ev, clubId, can }) {
         <Card className="stack">
           <h3>Publish registration</h3>
           <p className="small">
-            The seat limit defaults to the held hall&apos;s capacity{ev.hall ? ` (${ev.hall.capacity})` : ''}. You
-            can lower it, not raise it above the hall.
+            The seat limit defaults to the held hall&apos;s capacity{ev.hall ? ` (${ev.hall.capacity})` : ''}.
+            You can lower it, not raise it above the hall.
           </p>
           <div className="row">
             <FormField

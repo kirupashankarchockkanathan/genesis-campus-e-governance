@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useAction, useGet } from '../../api/hooks.js';
 import { useAuth } from '../../auth/AuthContext.jsx';
-import { PageBanner } from '../../components/layout/PageBanner.jsx';
 import { Card } from '../../components/ui/Card.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { Tabs } from '../../components/ui/Tabs.jsx';
@@ -10,31 +9,64 @@ import { QueryState, MutationError } from '../../components/ui/QueryState.jsx';
 import { FormRenderer } from '../../components/forms/FormRenderer.jsx';
 import { EventCard } from '../../components/events/EventBits.jsx';
 import { fmtDate, fmtDateTime } from '../../utils/dates.js';
-import { FavouriteStar } from './ClubsPage.jsx';
+import { FavouriteStar, coverOf, initialsOf } from './ClubsPage.jsx';
 import { PublicDiscussion } from './PublicDiscussion.jsx';
-
-const Fact = ({ label, children }) =>
-  children ? (
-    <div>
-      <dt className="muted small">{label}</dt>
-      <dd style={{ margin: 0 }}>{children}</dd>
-    </div>
-  ) : null;
 
 function About({ club }) {
   return (
-    <Card>
-      <dl className="stack-sm">
-        <Fact label="About">{club.description}</Fact>
-        <Fact label="Why join">{club.whyJoin}</Fact>
-        <Fact label="Aim">{club.aim}</Fact>
-        <Fact label="Faculty coordinator">{club.facultyCoordinator}</Fact>
-        <Fact label="Meetings">{club.meetingInfo}</Fact>
-        <Fact label="Contact">
-          {club.contactEmail && <a href={`mailto:${club.contactEmail}`}>{club.contactEmail}</a>}
-        </Fact>
-      </dl>
-    </Card>
+    <div className="stack">
+      {club.description && (
+        <section className="card feature-card">
+          <h2>About {club.name}</h2>
+          <p className="lead">{club.description}</p>
+        </section>
+      )}
+      <div className="info-grid">
+        {club.whyJoin && (
+          <section className="card info-card">
+            <span className="info-icon" aria-hidden="true">
+              ★
+            </span>
+            <h3>Why join</h3>
+            <p>{club.whyJoin}</p>
+          </section>
+        )}
+        {club.aim && (
+          <section className="card info-card">
+            <span className="info-icon" aria-hidden="true">
+              ◎
+            </span>
+            <h3>Our aim</h3>
+            <p>{club.aim}</p>
+          </section>
+        )}
+        {club.meetingInfo && (
+          <section className="card info-card">
+            <span className="info-icon" aria-hidden="true">
+              ◷
+            </span>
+            <h3>When we meet</h3>
+            <p>{club.meetingInfo}</p>
+          </section>
+        )}
+        {(club.contactEmail || club.facultyCoordinator) && (
+          <section className="card info-card">
+            <span className="info-icon" aria-hidden="true">
+              ✉
+            </span>
+            <h3>Get in touch</h3>
+            {club.contactEmail && (
+              <p>
+                <a href={`mailto:${club.contactEmail}`}>{club.contactEmail}</a>
+              </p>
+            )}
+            {club.facultyCoordinator && (
+              <p className="muted">Faculty coordinator: {club.facultyCoordinator}</p>
+            )}
+          </section>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -96,7 +128,7 @@ function Events({ club }) {
   return (
     <QueryState query={q} emptyTitle="No upcoming events" emptyText="Approved events will appear here.">
       {(events) => (
-        <div className="grid-cards">
+        <div className="event-grid">
           {events.map((e) => (
             <EventCard key={e.id} event={e} />
           ))}
@@ -211,24 +243,52 @@ export function ClubPage() {
   const q = useGet(['club', slug], `/clubs/${slug}`);
   const { memberships } = useAuth();
   const member = q.data && memberships.find((m) => m.club.id === q.data.id);
+  const upcoming = useGet(
+    ['events', { club: q.data?.id, hero: true }],
+    `/events?club=${q.data?.id}&pageSize=50`,
+    { enabled: Boolean(q.data) },
+  );
+  const recs = useGet(['club', q.data?.id, 'recruitments'], `/clubs/${q.data?.id}/recruitments`, {
+    enabled: Boolean(q.data),
+  });
+  const recruiting = (recs.data ?? []).some((r) => r.acceptingApplications);
   return (
     <QueryState query={q}>
       {(club) => (
         <>
-          <PageBanner
-            title={club.name}
-            description={club.tagline ?? club.category}
-            actions={
-              <>
+          <header className="club-hero">
+            <div className={`club-hero-cover ${coverOf(club.name)}`} />
+            <div className="club-hero-main">
+              <span className="avatar-xxl" aria-hidden="true">
+                {initialsOf(club.name)}
+              </span>
+              <div className="club-hero-text">
+                <span className="pill">{club.category}</span>
+                <h1>{club.name}</h1>
+                {club.tagline && <p className="lead">{club.tagline}</p>}
+                <ul className="hero-stats" aria-label="Club facts">
+                  <li>
+                    <strong>{club.memberCount}</strong> members
+                  </li>
+                  <li>
+                    <strong>{upcoming.data?.length ?? 0}</strong> upcoming events
+                  </li>
+                  {recruiting && (
+                    <li>
+                      <span className="pill pill-ok">Recruiting now</span>
+                    </li>
+                  )}
+                </ul>
+              </div>
+              <div className="club-hero-actions">
                 <FavouriteStar club={club} />
-                {member && (
-                  <Button variant="light" to={`/club/${club.id}`}>
-                    Open workspace
-                  </Button>
+                {member && <Button to={`/club/${club.id}`}>Open workspace</Button>}
+                {!member && recruiting && (
+                  <Button onClick={() => setParams({ tab: 'recruitment' })}>Join this club</Button>
                 )}
-              </>
-            }
-          />
+              </div>
+            </div>
+          </header>
           <Tabs
             value={tab}
             onChange={(t) => setParams({ tab: t })}

@@ -34,7 +34,7 @@ export function SignupPage() {
             ? 'Check your college email for a verification link, then log in.'
             : 'Your account is ready.'}
         </div>
-        <Button to="/login">Go to log in</Button>
+        <Button to="/login?as=student">Go to log in</Button>
       </AuthLayout>
     );
   }
@@ -94,7 +94,7 @@ export function SignupPage() {
         </Button>
       </form>
       <p className="small">
-        Already have an account? <Link to="/login">Log in</Link>
+        Already have an account? <Link to="/login?as=student">Log in</Link>
       </p>
     </AuthLayout>
   );

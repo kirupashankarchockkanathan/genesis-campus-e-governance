@@ -98,12 +98,29 @@ const recallClub = () => {
   }
 };
 
+const PORTAL_KEY = 'ccp:portal';
+/** The login the user chose on the start screen; a club member who used the Student login lands on the student side. */
+export const rememberPortal = (portal) => {
+  try {
+    sessionStorage.setItem(PORTAL_KEY, portal);
+  } catch {
+    /* storage may be unavailable */
+  }
+};
+const recallPortal = () => {
+  try {
+    return sessionStorage.getItem(PORTAL_KEY);
+  } catch {
+    return null;
+  }
+};
+
 /** FR-AUTH-07: where to land after login. */
 export function landingPath({ platformRole, memberships }) {
   if (platformRole === PLATFORM_ROLES.OSI_ADMIN) return '/osi/approvals';
   if (platformRole === PLATFORM_ROLES.EVENTS_ADMIN) return '/events-admin/requests';
   if (platformRole === PLATFORM_ROLES.SUPER_ADMIN) return '/admin/users';
-  if (memberships.length) {
+  if (memberships.length && recallPortal() !== 'student') {
     const last = recallClub();
     const pick = memberships.find((m) => m.club.id === last) ?? memberships[0];
     return `/club/${pick.club.id}`;

@@ -21,7 +21,7 @@ describe('login and signup forms', () => {
     const calls = mockApi({
       'POST /auth/refresh': () => [401, { error: { code: 'UNAUTHENTICATED', message: 'no' } }],
     });
-    renderApp('/login');
+    renderApp('/login?as=student');
     await userEvent.click(await screen.findByRole('button', { name: /^log in$/i }));
     expect(await screen.findByText(/enter your username or email/i)).toBeInTheDocument();
     expect(screen.getByText(/enter your password/i)).toBeInTheDocument();
@@ -35,7 +35,7 @@ describe('login and signup forms', () => {
       'POST /auth/refresh': () => [401, { error: { code: 'UNAUTHENTICATED', message: 'no' } }],
       'POST /auth/login': () => pending,
     });
-    renderApp('/login');
+    renderApp('/login?as=student');
     await userEvent.type(await screen.findByLabelText(/username or email/i), 'asha');
     await userEvent.type(screen.getByLabelText(/^password$/i), 'whatever1');
     await userEvent.click(screen.getByRole('button', { name: /^log in$/i }));
@@ -58,10 +58,26 @@ describe('login and signup forms', () => {
 });
 
 describe('route guards', () => {
-  it('TC-UI-02 logged-out users are redirected to the login page', async () => {
+  it('TC-UI-02 logged-out users are redirected to the start screen with exactly three buttons', async () => {
     mockApi({ 'POST /auth/refresh': () => [401, { error: { code: 'UNAUTHENTICATED', message: 'no' } }] });
     renderApp('/clubs');
-    expect(await screen.findByRole('heading', { name: /log in/i })).toBeInTheDocument();
+    const nav = await screen.findByRole('navigation', { name: /choose how to sign in/i });
+    const links = within(nav).getAllByRole('link');
+    expect(links).toHaveLength(3);
+    expect(links.map((l) => l.getAttribute('href'))).toEqual([
+      '/login?as=student',
+      '/login?as=member',
+      '/login?as=admin',
+    ]);
+    expect(links[0]).toHaveTextContent('Student');
+    expect(links[1]).toHaveTextContent('Club Member');
+    expect(links[2]).toHaveTextContent('Administrator');
+  });
+
+  it('each portal opens its own login screen', async () => {
+    mockApi({ 'POST /auth/refresh': () => [401, { error: { code: 'UNAUTHENTICATED', message: 'no' } }] });
+    renderApp('/login?as=admin');
+    expect(await screen.findByRole('heading', { name: /administrator login/i })).toBeInTheDocument();
   });
 
   it('TC-UI-02 the wrong platform role sees an access-denied page, not a blank page', async () => {
@@ -187,5 +203,48 @@ describe('PermissionGate (TC-UI-04)', () => {
   it('shows "Submit to OSI" to the Leader', async () => {
     renderGate('LEADER');
     expect(await screen.findByRole('button', { name: /submit to osi/i })).toBeInTheDocument();
+  });
+});
+
+describe('portal logins', () => {
+  const loginVia = async (path, me, memberships = []) => {
+    const user = makeUser({ platformRole: me });
+    mockApi({
+      'POST /auth/refresh': () => [401, { error: { code: 'UNAUTHENTICATED', message: 'no' } }],
+      'POST /auth/login': () => [200, { data: { accessToken: 'tok', user } }],
+      'GET /me': () => [200, { data: { user, platformRole: me, memberships } }],
+      'POST /auth/logout': () => [200, { data: {} }],
+    });
+    renderApp(path);
+    await userEvent.type(await screen.findByLabelText(/username or email/i), 'someone');
+    await userEvent.type(screen.getByLabelText(/^password$/i), 'whatever1');
+    await userEvent.click(screen.getByRole('button', { name: /^log in$/i }));
+  };
+
+  it('the Administrator login refuses a student account', async () => {
+    await loginVia('/login?as=admin', 'student');
+    expect(await screen.findByRole('alert')).toHaveTextContent(/student account/i);
+  });
+
+  it('the Student login refuses an administrator account', async () => {
+    await loginVia('/login?as=student', 'osi_admin');
+    expect(await screen.findByRole('alert')).toHaveTextContent(/Administrator login/i);
+  });
+
+  it('the Club Member login refuses a student who is in no club', async () => {
+    await loginVia('/login?as=member', 'student', []);
+    expect(await screen.findByRole('alert')).toHaveTextContent(/not a member of any club/i);
+  });
+
+  it('a club member on the Student login lands on the student side; on the Club Member login in the workspace', async () => {
+    const m = [membership('c1', 'LEADER', 'Leader', DEFAULT_ROLE_PERMISSIONS.LEADER)];
+    await loginVia('/login?as=student', 'student', m);
+    expect(await screen.findByRole('heading', { name: 'Clubs', level: 1 })).toBeInTheDocument();
+  });
+
+  it('the Club Member login opens the club workspace', async () => {
+    const m = [membership('c1', 'LEADER', 'Leader', DEFAULT_ROLE_PERMISSIONS.LEADER)];
+    await loginVia('/login?as=member', 'student', m);
+    expect(await screen.findByRole('heading', { name: 'Club c1', level: 1 })).toBeInTheDocument();
   });
 });

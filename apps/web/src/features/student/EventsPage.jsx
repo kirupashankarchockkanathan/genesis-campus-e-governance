@@ -29,7 +29,7 @@ export function EventsPage() {
   return (
     <>
       <PageBanner title="Events" description="Every approved event on campus." />
-      <div className="row" role="search">
+      <div className="filter-bar" role="search">
         <div className="field">
           <label htmlFor="ev-club">Club</label>
           <select
@@ -101,7 +101,7 @@ export function EventsPage() {
       >
         {(d) => (
           <>
-            <div className="grid-cards">
+            <div className="event-grid">
               {d.data.map((e) => (
                 <EventCard key={e.id} event={e} />
               ))}

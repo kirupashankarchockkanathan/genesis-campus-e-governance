@@ -707,3 +707,103 @@ dd {
     bottom: calc(var(--tabbar-h) + var(--s3) + 64px);
   }
 }
+
+/* ---------- Start screen: three portals ---------- */
+.portal-page {
+  min-height: 100vh;
+  display: grid;
+  align-content: center;
+  gap: var(--s6);
+  padding: var(--s6) var(--s4);
+  max-width: 1180px;
+  margin: 0 auto;
+}
+.portal-hero {
+  display: grid;
+  gap: var(--s3);
+  justify-items: center;
+  text-align: center;
+}
+.portal-hero h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  color: var(--brand);
+}
+.portal-hero p {
+  max-width: 56ch;
+  color: var(--ink-2);
+  font-size: 1.1rem;
+}
+.brand-mark-lg {
+  width: 64px;
+  height: 64px;
+  font-size: 1.8rem;
+  background: var(--brand);
+  color: var(--on-brand);
+  border-radius: var(--r-lg);
+}
+.portal-grid {
+  display: grid;
+  gap: var(--s5);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+@media (max-width: 900px) {
+  .portal-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.portal-card {
+  display: grid;
+  gap: var(--s3);
+  align-content: start;
+  padding: var(--s6) var(--s5);
+  background: var(--surface);
+  color: var(--ink);
+  border: 2px solid var(--line);
+  border-radius: var(--r-lg);
+  box-shadow: var(--e1);
+  text-decoration: none;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s,
+    border-color 0.15s;
+}
+.portal-card:hover,
+.portal-card:focus-visible {
+  transform: translateY(-4px);
+  border-color: var(--brand);
+  box-shadow: var(--e2);
+}
+.portal-icon {
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-lg);
+  background: linear-gradient(135deg, var(--banner-a), var(--banner-b));
+  color: var(--on-brand);
+}
+.portal-title {
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+}
+.portal-tag {
+  color: var(--ink-2);
+}
+.portal-bullets {
+  margin: 0;
+  padding-left: var(--s5);
+  color: var(--ink-2);
+  display: grid;
+  gap: var(--s1);
+}
+.portal-cta {
+  margin-top: var(--s3);
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-md);
+  background: var(--brand);
+  color: var(--on-brand);
+  font-weight: 700;
+}

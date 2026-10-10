@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAction, useGet } from '../../api/hooks.js';
 import { useAuth } from '../../auth/AuthContext.jsx';
-import { PageBanner } from '../../components/layout/PageBanner.jsx';
 import { Card } from '../../components/ui/Card.jsx';
 import { Button } from '../../components/ui/Button.jsx';
 import { QueryState, MutationError } from '../../components/ui/QueryState.jsx';
 import { ConfirmDialog } from '../../components/ui/Modal.jsx';
 import { FormRenderer } from '../../components/forms/FormRenderer.jsx';
-import { QrTicket, ShareButton, StatusPill } from '../../components/events/EventBits.jsx';
+import { DateBadge, QrTicket, SeatBar, ShareButton, StatusPill } from '../../components/events/EventBits.jsx';
+import { Icon } from '../../components/layout/Icon.jsx';
 import { fmtDateTime, fmtRange } from '../../utils/dates.js';
 
 /** Client-side view of what the registration button should say (TC-UI-10). */
@@ -40,6 +40,8 @@ function Ticket({ eventId }) {
   return <QueryState query={q}>{(t) => <QrTicket ticket={t} />}</QueryState>;
 }
 
+const isImage = (u) => /\.(png|jpe?g|webp)$/i.test(u ?? '');
+
 export function EventDetailPage() {
   const { id } = useParams();
   const { user, platformRole } = useAuth();
@@ -68,18 +70,67 @@ export function EventDetailPage() {
     <QueryState query={q}>
       {(ev) => {
         const state = registrationState(ev);
+        const venue =
+          ev.hall?.bookingStatus === 'confirmed'
+            ? `${ev.hall.name}${ev.hall.building ? `, ${ev.hall.building}` : ''}`
+            : ev.mode === 'online'
+              ? 'Online'
+              : 'Venue to be confirmed';
         return (
           <>
-            <PageBanner
-              title={ev.title}
-              description={`${ev.clubName} · ${fmtRange(ev.startsAt, ev.endsAt)}`}
-              actions={<StatusPill status={ev.status} />}
-            />
+            <header className="event-hero">
+              {isImage(ev.posterUrl) ? (
+                <img className="event-hero-poster" src={ev.posterUrl} alt={`Poster of ${ev.title}`} />
+              ) : (
+                <div className="event-hero-poster event-hero-fallback" aria-hidden="true">
+                  <DateBadge iso={ev.startsAt} large />
+                </div>
+              )}
+              <div className="event-hero-text">
+                <div className="row">
+                  <span className="pill">{ev.type.replace('_', ' ')}</span>
+                  <StatusPill status={ev.status} />
+                  {state === 'open' && <span className="pill pill-ok">Registration open</span>}
+                </div>
+                <h1>{ev.title}</h1>
+                <p className="lead">
+                  Organised by <Link to={`/clubs/${ev.clubSlug}`}>{ev.clubName}</Link>
+                </p>
+                <ul className="fact-tiles">
+                  <li>
+                    <Icon name="calendar" size={22} />
+                    <span>
+                      <span className="muted small">When</span>
+                      <strong>{fmtRange(ev.startsAt, ev.endsAt)}</strong>
+                    </span>
+                  </li>
+                  <li>
+                    <Icon name="building" size={22} />
+                    <span>
+                      <span className="muted small">Where</span>
+                      <strong>{venue}</strong>
+                    </span>
+                  </li>
+                  <li>
+                    <Icon name="clock" size={22} />
+                    <span>
+                      <span className="muted small">Registration closes</span>
+                      <strong>{fmtDateTime(ev.registrationClosesAt ?? ev.registrationDeadline)}</strong>
+                    </span>
+                  </li>
+                  <li>
+                    <Icon name="group" size={22} />
+                    <span>
+                      <span className="muted small">Seats</span>
+                      <SeatBar event={ev} />
+                    </span>
+                  </li>
+                </ul>
+                <ShareButton event={ev} />
+              </div>
+            </header>
             <div className="two-col">
               <div className="stack">
-                {ev.posterUrl && /\.(png|jpe?g|webp)$/i.test(ev.posterUrl) && (
-                  <img className="poster" src={ev.posterUrl} alt={`Poster of ${ev.title}`} />
-                )}
                 {ev.posterUrl?.endsWith('.pdf') && (
                   <a className="btn btn-secondary" href={ev.posterUrl} target="_blank" rel="noreferrer">
                     Open poster (PDF)

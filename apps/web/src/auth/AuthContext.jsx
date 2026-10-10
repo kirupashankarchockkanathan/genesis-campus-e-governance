@@ -52,15 +52,25 @@ export function AuthProvider({ children }) {
     };
   }, [load]);
 
-  const login = useCallback(
-    async (identifier, password) => {
-      const data = await publicApi('/auth/login', { method: 'POST', body: { identifier, password } });
-      setAccessToken(data.accessToken);
-      await load(data.user);
-      return data.user;
-    },
-    [load],
-  );
+  /**
+   * `accept(me)` lets a login portal refuse an account that does not belong there (for example a student on the
+   * Administrator login). When it returns a message the session is ended again and nothing is shown to the user.
+   */
+  const login = useCallback(async (identifier, password, accept) => {
+    const data = await publicApi('/auth/login', { method: 'POST', body: { identifier, password } });
+    setAccessToken(data.accessToken);
+    const me = data.user.mustChangePassword
+      ? { user: data.user, platformRole: data.user.platformRole, memberships: [] }
+      : await api('/me');
+    const refusal = accept?.(me);
+    if (refusal) {
+      await publicApi('/auth/logout', { method: 'POST' }).catch(() => {});
+      setAccessToken(null);
+      throw new Error(refusal);
+    }
+    setState(data.user.mustChangePassword ? fromLoginUser(data.user) : fromMe(me));
+    return me;
+  }, []);
 
   const changePassword = useCallback(
     async (currentPassword, newPassword) => {

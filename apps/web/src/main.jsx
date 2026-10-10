@@ -6,6 +6,7 @@ import './styles/utilities.css';
 import './styles/components.css';
 import './styles/layout.css';
 import './styles/features.css';
+import './styles/showcase.css';
 import { Providers } from './app/providers.jsx';
 import { AppRoutes } from './app/router.jsx';
 import { initTheme } from './components/layout/ThemeToggle.jsx';

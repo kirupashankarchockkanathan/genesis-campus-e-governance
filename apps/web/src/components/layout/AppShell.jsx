@@ -7,6 +7,7 @@ import { TopBar } from './TopBar.jsx';
 import { BottomTabs } from './BottomTabs.jsx';
 import { ToastStack } from '../notifications/ToastStack.jsx';
 import { ChatPanel } from '../chat/ChatPanel.jsx';
+import { ErrorBoundary } from '../ui/ErrorBoundary.jsx';
 
 export function AppShell() {
   const { platformRole, memberships } = useAuth();
@@ -31,7 +32,9 @@ export function AppShell() {
       <div className="main">
         <TopBar />
         <main id="main" className="content" tabIndex={-1}>
-          <Outlet />
+          <ErrorBoundary resetKey={pathname}>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
       <BottomTabs items={items} />

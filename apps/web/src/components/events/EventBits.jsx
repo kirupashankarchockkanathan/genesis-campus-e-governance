@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { QRCodeSVG } from 'qrcode.react';
 import { Html5Qrcode } from 'html5-qrcode';
-import { fmtRange } from '../../utils/dates.js';
-import { Card } from '../ui/Card.jsx';
+import { fmtDate, fmtRange } from '../../utils/dates.js';
+import { Icon } from '../layout/Icon.jsx';
 import { Pill } from '../ui/Pill.jsx';
 
 export const EVENT_STATUS_LABEL = {
@@ -17,34 +17,102 @@ export const EVENT_STATUS_LABEL = {
 };
 export const StatusPill = ({ status }) => <Pill status={status}>{EVENT_STATUS_LABEL[status] ?? status}</Pill>;
 
-/** Card used in the Events list and club pages. */
-export function EventCard({ event, to }) {
+const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+
+/** Big calendar-style date badge in the portal time zone. */
+export function DateBadge({ iso, large = false }) {
+  const local = fmtDate(iso).split(' '); // "d MMM yyyy"
+  const month = MONTHS.findIndex((m) => m.toLowerCase() === local[1]?.toLowerCase());
   return (
-    <Card as="article" className="event-card">
-      {event.posterUrl && /\.(png|jpe?g|webp)$/i.test(event.posterUrl) && (
-        <img className="poster-thumb" src={event.posterUrl} alt={`Poster of ${event.title}`} loading="lazy" />
-      )}
-      <div className="row-between">
+    <span className={`date-badge ${large ? 'date-badge-lg' : ''}`} aria-hidden="true">
+      <span className="date-badge-day">{local[0]}</span>
+      <span className="date-badge-month">{month >= 0 ? MONTHS[month] : local[1]}</span>
+    </span>
+  );
+}
+
+/** Seats taken versus the limit, as text and a bar (never colour alone). */
+export function SeatBar({ event }) {
+  if (event.maxSeats === null || event.maxSeats === undefined) {
+    return <span className="small muted">{event.registeredCount} registered</span>;
+  }
+  const pct = Math.min(100, Math.round((event.registeredCount / event.maxSeats) * 100));
+  const left = Math.max(0, event.maxSeats - event.registeredCount);
+  return (
+    <div className="seatbar" role="group" aria-label="Seats">
+      <div
+        className="seatbar-track"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={event.maxSeats}
+        aria-valuenow={event.registeredCount}
+      >
+        <span className="seatbar-fill" style={{ width: `${pct}%` }} />
+      </div>
+      <span className="small">{left === 0 ? 'Full' : `${left} of ${event.maxSeats} seats left`}</span>
+    </div>
+  );
+}
+
+const isImage = (u) => /\.(png|jpe?g|webp)$/i.test(u ?? '');
+const venueOf = (e) =>
+  e.hall?.bookingStatus === 'confirmed'
+    ? e.hall.name
+    : e.mode === 'online'
+      ? 'Online'
+      : e.mode === 'hybrid'
+        ? 'Hybrid'
+        : 'Venue to be confirmed';
+
+/** Large event card used in the Events list, club pages and favourites. */
+export function EventCard({ event, to }) {
+  const href = to ?? `/events/${event.id}`;
+  return (
+    <article className="event-card-lg">
+      <Link to={href} className="event-media" aria-label={`Open ${event.title}`}>
+        {isImage(event.posterUrl) ? (
+          <img src={event.posterUrl} alt={`Poster of ${event.title}`} loading="lazy" />
+        ) : (
+          <span className="event-media-fallback" aria-hidden="true">
+            {event.type.replace('_', ' ')}
+          </span>
+        )}
+        <DateBadge iso={event.startsAt} />
+        <span className="event-type-chip">{event.type.replace('_', ' ')}</span>
+      </Link>
+      <div className="event-body">
+        <p className="event-club">{event.clubName}</p>
         <h2>
-          <Link to={to ?? `/events/${event.id}`}>{event.title}</Link>
+          <Link to={href}>{event.title}</Link>
         </h2>
-        <StatusPill status={event.status} />
+        <p className="event-summary">{event.summary}</p>
+        <ul className="event-meta">
+          <li>
+            <Icon name="clock" size={16} /> {fmtRange(event.startsAt, event.endsAt)}
+          </li>
+          <li>
+            <Icon name="building" size={16} /> {venueOf(event)}
+          </li>
+        </ul>
+        <SeatBar event={event} />
+        <div className="row-between event-foot">
+          <div className="row">
+            <StatusPill status={event.status} />
+            {event.myRegistration && (
+              <Pill status="registered">
+                {event.myRegistration.status === 'waitlisted' ? 'Waitlisted' : 'Registered'}
+              </Pill>
+            )}
+            {event.registrationStatus === 'published' && !event.myRegistration && (
+              <Pill status="open">Registration open</Pill>
+            )}
+          </div>
+          <Link className="btn btn-primary" to={href}>
+            {event.registrationStatus === 'published' && !event.myRegistration ? 'Register' : 'View details'}
+          </Link>
+        </div>
       </div>
-      <p className="muted small">{event.clubName}</p>
-      <p>{event.summary}</p>
-      <p className="small">{fmtRange(event.startsAt, event.endsAt)}</p>
-      <div className="row">
-        <span className="pill">{event.type.replace('_', ' ')}</span>
-        {event.myRegistration && (
-          <Pill status="registered">
-            {event.myRegistration.status === 'waitlisted' ? 'Waitlisted' : 'Registered'}
-          </Pill>
-        )}
-        {event.registrationStatus === 'published' && !event.myRegistration && (
-          <Pill status="open">Registration open</Pill>
-        )}
-      </div>
-    </Card>
+    </article>
   );
 }
 

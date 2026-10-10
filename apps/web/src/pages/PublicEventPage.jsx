@@ -43,7 +43,7 @@ export function PublicEventPage() {
             ) : (
               <div className="stack-sm">
                 <p>Log in to register for this event.</p>
-                <Button to="/login" state={{ from: `/events/${ev.id}` }}>
+                <Button to="/login?as=student" state={{ from: `/events/${ev.id}` }}>
                   Log in to register
                 </Button>
               </div>

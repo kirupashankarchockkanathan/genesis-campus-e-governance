@@ -4,8 +4,6 @@ import { CLUB_CATEGORIES } from '@ccp/shared';
 import { useAction, useGet, qs } from '../../api/hooks.js';
 import { useAuth } from '../../auth/AuthContext.jsx';
 import { PageBanner } from '../../components/layout/PageBanner.jsx';
-import { Card } from '../../components/ui/Card.jsx';
-import { Avatar } from '../../components/ui/Avatar.jsx';
 import { QueryState } from '../../components/ui/QueryState.jsx';
 
 export function FavouriteStar({ club, onDone }) {
@@ -26,6 +24,52 @@ export function FavouriteStar({ club, onDone }) {
   );
 }
 
+/** Stable cover variant per club so every card keeps its own look (tokens only, no raw colours). */
+export const coverOf = (name = '') => {
+  let h = 0;
+  for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 6;
+  return `cover-${h}`;
+};
+export const initialsOf = (name = '') =>
+  name
+    .replace(/[^A-Za-z0-9 ]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((w) => w[0].toUpperCase())
+    .join('');
+
+function ClubCard({ club }) {
+  return (
+    <article className="club-card">
+      <div className={`club-cover ${coverOf(club.name)}`}>
+        <span className="avatar-xl" aria-hidden="true">
+          {initialsOf(club.name)}
+        </span>
+        {club.recruiting && <span className="ribbon">Recruiting now</span>}
+        <span className="club-cover-star">
+          <FavouriteStar club={club} />
+        </span>
+      </div>
+      <div className="club-card-body">
+        <span className="pill">{club.category}</span>
+        <h2>
+          <Link to={`/clubs/${club.slug}`}>{club.name}</Link>
+        </h2>
+        <p className="club-blurb">{club.tagline ?? club.description}</p>
+        <div className="club-foot">
+          <span className="stat">
+            <strong>{club.memberCount}</strong> members
+          </span>
+          <Link className="btn btn-primary" to={`/clubs/${club.slug}`}>
+            View club
+          </Link>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 /** FR-CLUB-01: all active clubs with search, category filter, favourite star and Recruiting badge. */
 export function ClubsPage() {
   const [q, setQ] = useState('');
@@ -39,10 +83,16 @@ export function ClubsPage() {
   return (
     <>
       <PageBanner title="Clubs" description="Find a club, see what it does and when it recruits." />
-      <div className="row" role="search">
-        <div className="field" style={{ flex: '1 1 240px' }}>
+      <div className="filter-bar" role="search">
+        <div className="field" style={{ flex: '1 1 260px' }}>
           <label htmlFor="club-search">Search clubs</label>
-          <input id="club-search" className="input" value={q} onChange={(e) => setQ(e.target.value)} />
+          <input
+            id="club-search"
+            className="input"
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Name or topic"
+          />
         </div>
         <div className="field" style={{ flex: '0 1 220px' }}>
           <label htmlFor="club-category">Category</label>
@@ -58,36 +108,23 @@ export function ClubsPage() {
             ))}
           </select>
         </div>
-        <label className="check">
+        <label className="check filter-check">
           <input type="checkbox" checked={recruiting} onChange={(e) => setRecruiting(e.target.checked)} />{' '}
           Recruiting now
         </label>
       </div>
       <QueryState query={query} emptyTitle="No clubs found" emptyText="Try a different search or category.">
         {(clubs) => (
-          <div className="grid-cards">
-            {clubs.map((club) => (
-              <Card key={club.id} as="article">
-                <div className="row-between">
-                  <div className="row" style={{ flexWrap: 'nowrap' }}>
-                    <Avatar name={club.name} />
-                    <div>
-                      <h2>
-                        <Link to={`/clubs/${club.slug}`}>{club.name}</Link>
-                      </h2>
-                      <span className="muted small">{club.category}</span>
-                    </div>
-                  </div>
-                  <FavouriteStar club={club} />
-                </div>
-                <p>{club.tagline ?? club.description}</p>
-                <div className="row">
-                  <span className="muted small">{club.memberCount} members</span>
-                  {club.recruiting && <span className="pill pill-ok">Recruiting</span>}
-                </div>
-              </Card>
-            ))}
-          </div>
+          <>
+            <p className="muted" aria-live="polite">
+              {clubs.length} {clubs.length === 1 ? 'club' : 'clubs'}
+            </p>
+            <div className="club-grid">
+              {clubs.map((club) => (
+                <ClubCard key={club.id} club={club} />
+              ))}
+            </div>
+          </>
         )}
       </QueryState>
     </>

@@ -31,7 +31,7 @@ export function VerifyEmailPage() {
           {state.message}
         </div>
       )}
-      <Button to="/login">Go to log in</Button>
+      <Button to="/login?as=student">Go to log in</Button>
     </AuthLayout>
   );
 }
