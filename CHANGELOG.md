@@ -2,6 +2,10 @@
 
 All notable changes, newest first. One line per completed task (spec section 0, rule 9).
 
+## 1.3.0
+
+- Floating chat for student, club and administrator roles (`POST /ai/chat`, role-scoped data, conversation history); Sign out button in every sidebar.
+
 ## 1.2.0 (Amrita brand theme)
 
 - Re-themed the UI to the Amrita brand identity (AM Maroon #A4123F, black 90%, Open Sans) from amrita.edu/branding; layout and pages unchanged.

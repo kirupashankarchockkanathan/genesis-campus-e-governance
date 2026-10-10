@@ -406,6 +406,42 @@ test.describe('E2E-05 every screen opens', () => {
   }
 });
 
+test.describe('E2E-07 chat and sign-out for every role', () => {
+  for (const [who, home] of [
+    ['student', /Good (morning|afternoon|evening), Arjun/],
+    ['club', /Innovation Club/],
+    ['osa', /Welcome back, Meera/],
+  ]) {
+    test(`${who}: the chat answers and Sign out ends the session`, async ({ browser }) => {
+      const { context, page } = await as(browser, who, home);
+      await page.getByRole('button', { name: 'Open chat assistant' }).click();
+      const box = page.getByLabel('Message', { exact: true });
+      await box.fill('hello');
+      await page.getByRole('button', { name: 'Send message' }).click();
+      await expect(page.getByText(/I am the GENESIS assistant/)).toBeVisible();
+      await box.fill('What events are happening this week?');
+      await page.getByRole('button', { name: 'Send message' }).click();
+      await expect(page.getByText(/Innovation Sprint/).last()).toBeVisible({ timeout: 20_000 });
+      await page.getByRole('button', { name: 'Close chat' }).first().click();
+
+      await page
+        .getByRole('button', { name: /^Sign out$/ })
+        .first()
+        .click();
+      await expect(page).toHaveURL(/\/$/);
+      await page.goto(
+        who === 'student'
+          ? '/student/dashboard'
+          : who === 'club'
+            ? '/club/dashboard'
+            : '/admin/osa/dashboard',
+      );
+      await expect(page).toHaveURL(/\/$/);
+      await context.close();
+    });
+  }
+});
+
 test.describe('E2E-06 demo reset (kept last: it restores the sample data)', () => {
   test('OSA resets the shared demo data', async ({ browser }) => {
     const osa = await as(browser, 'osa', /Welcome back, Meera/);

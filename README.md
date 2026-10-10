@@ -22,6 +22,8 @@ The web app is the supplied **GENESIS Campus Connect** UI, in the **Amrita brand
 - **Events Section**: online review, hard-copy letter verification, publish and notify students, promotion review, club applications (view and AI duplicate check), clubs, reports.
 - **OSA**: everything the Events Section does plus the **final approval** of events and the **approve or reject** decision on club applications.
 - **Server-enforced rules**: sign-in per portal, role checks on every action, club scoping, the approval order (online review, hard copy, OSA approval, publish) and what each portal may see.
+- **Chat for every role**: a small floating chat (bottom right) for students, club authorities and administrators. It sees only what that role may see (a club its own requests, administrators the queue) and keeps the conversation. With `ANTHROPIC_API_KEY` it also answers general questions; without a key it answers portal questions and small talk with built-in rules.
+- **Sign out** is in every sidebar and in the profile menu.
 - **Campus Assistant**: answers from published events, clubs and the process notes. With `ANTHROPIC_API_KEY` set it uses Claude on the server; without a key it answers with built-in rules.
 
 The earlier API modules (events with hall holds, forms, recruitment, discussions, custom roles, notifications stream) are still in `apps/api` and tested, but this UI does not use them. See decision D40.

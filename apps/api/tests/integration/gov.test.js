@@ -616,3 +616,56 @@ describe('campus assistant', () => {
     overrideConfig({ CHAT_RATE_PER_MINUTE: 20 });
   });
 });
+
+describe('chat for every portal', () => {
+  it('answers small talk and portal questions for students, clubs and administrators without a model', async () => {
+    const student = await session('STU2026001');
+    const club = await session('CLUB001');
+    const osa = await session('OSA001');
+    const hi = await student.post('/ai/chat', { message: 'hello' });
+    expect(hi.status).toBe(200);
+    expect(hi.body.data.answer).toMatch(/Hello/);
+    expect(hi.body.data.engine).toBe('rules');
+    const mine = await club.post('/ai/chat', { message: 'What is the status of my requests?' });
+    expect(mine.body.data.answer).toMatch(/Open Lab Evening/);
+    expect(mine.body.data.answer).not.toMatch(/Robotics Arena/); // another club's request
+    const queue = await osa.post('/ai/chat', { message: 'What is waiting for review?' });
+    expect(queue.body.data.answer).toMatch(/Queue summary/);
+    // a student never gets the administrators' queue
+    const sneaky = await student.post('/ai/chat', { message: 'what requests are pending approval?' });
+    expect(sneaky.body.data.answer).not.toMatch(/Queue summary|REQ-12/);
+  });
+
+  it('gives the model only what the portal may see and keeps the conversation', async () => {
+    const calls = [];
+    const llmApp = buildTestApp(knex, {
+      llm: { ask: async (a) => (calls.push(a), { text: 'Sure thing.', refused: false }) },
+    });
+    const login = await request(llmApp)
+      .post(`${BASE}/auth/login`)
+      .send({ identifier: 'STU2026001', password: 'student123', portal: 'student' });
+    const h = { Authorization: `Bearer ${login.body.data.accessToken}`, 'X-Portal': 'student' };
+    const res = await request(llmApp)
+      .post(`${BASE}/ai/chat`)
+      .set(h)
+      .send({
+        message: 'Tell me about the innovation sprint',
+        history: [
+          { role: 'user', content: 'hi' },
+          { role: 'assistant', content: 'Hello' },
+        ],
+      });
+    expect(res.body.data).toEqual({ answer: 'Sure thing.', engine: 'claude' });
+    expect(calls[0].messages.length).toBe(3);
+    const prompt = calls[0].messages.at(-1).content;
+    expect(prompt).toContain('Innovation Sprint');
+    expect(prompt).not.toContain('Open Lab Evening'); // unpublished request of a club
+    expect(calls[0].system).toMatch(/general questions/);
+  });
+
+  it('needs a login and a message', async () => {
+    expect((await request(app).post(`${BASE}/ai/chat`).send({ message: 'hi' })).status).toBe(401);
+    const s = await session('STU2026001');
+    expect((await s.post('/ai/chat', { message: '   ' })).status).toBe(400);
+  });
+});

@@ -2,6 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { Icon, Logo } from './ui';
 import { cn } from '../utils/helpers';
 import { useApp } from '../context/AppContext';
+import { useAuth } from '../context/AuthContext';
 
 export const STUDENT_NAV = [
   { to: '/student/dashboard', label: 'Dashboard', icon: 'LayoutGrid' },
@@ -19,6 +20,7 @@ export const STUDENT_NAV = [
 export function SidebarContent({ items, sectionLabel, onNavigate, showAssistantCard = true, footer = null }) {
   const navigate = useNavigate();
   const { unreadCount } = useApp();
+  const { logout } = useAuth();
   return (
     <div className="flex h-full flex-col">
       <div className="px-6 pb-5 pt-7">
@@ -68,6 +70,14 @@ export function SidebarContent({ items, sectionLabel, onNavigate, showAssistantC
           </div>
         </div>
       )}
+      <div className="border-t border-line px-4 py-3">
+        <button
+          onClick={() => { logout(); navigate('/'); }}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-semibold text-rose-ink transition hover:bg-rose-soft"
+        >
+          <Icon name="LogOut" className="h-[18px] w-[18px]" /> Sign out
+        </button>
+      </div>
     </div>
   );
 }

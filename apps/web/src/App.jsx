@@ -5,6 +5,7 @@ import RoleSelect from './pages/RoleSelect';
 import AdminTypeSelect from './pages/AdminTypeSelect';
 import Login from './pages/Login';
 import NotFound from './pages/NotFound';
+import ChatWidget from './components/ChatWidget';
 
 import StudentLayout from './components/StudentLayout';
 import Dashboard from './pages/student/Dashboard';
@@ -53,6 +54,7 @@ function Protected({ allow, adminType, children }) {
 export default function App() {
   const { user } = useAuth();
   return (
+    <>
     <Routes>
       {/* Entry flow */}
       <Route path="/" element={<RoleSelect />} />
@@ -141,5 +143,7 @@ export default function App() {
       <Route path="/login" element={<Navigate to="/" replace />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
+    {user && <ChatWidget />}
+    </>
   );
 }

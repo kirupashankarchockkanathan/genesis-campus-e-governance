@@ -165,3 +165,28 @@ aiRouter.post(
     res.json({ data: await ai.assistant(db(req), req.user, req.body.question, { llm: llmFor(req) }) }),
   ),
 );
+
+aiRouter.post(
+  '/chat',
+  auth,
+  validate({
+    body: z.object({
+      message: z.string().trim().min(1).max(800),
+      history: z
+        .array(z.object({ role: z.enum(['user', 'assistant']), content: z.string().max(800) }))
+        .max(12)
+        .default([]),
+    }),
+  }),
+  wrap(async (req, res) => {
+    const portal = await portalFor(req);
+    res.json({
+      data: await ai.chat(
+        db(req),
+        req.user,
+        { portal, actor: req.actor, message: req.body.message, history: req.body.history },
+        { llm: llmFor(req) },
+      ),
+    });
+  }),
+);
