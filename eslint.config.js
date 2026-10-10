@@ -8,7 +8,11 @@ export default [
   js.configs.recommended,
   {
     files: ['**/*.{js,jsx}'],
-    languageOptions: { ecmaVersion: 2023, sourceType: 'module', globals: { ...globals.node, ...globals.browser } },
+    languageOptions: {
+      ecmaVersion: 2023,
+      sourceType: 'module',
+      globals: { ...globals.node, ...globals.browser },
+    },
     rules: { 'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }] },
   },
   {
@@ -16,6 +20,12 @@ export default [
     plugins: { react, 'react-hooks': reactHooks },
     settings: { react: { version: '18' } },
     languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
-    rules: { ...react.configs.recommended.rules, ...reactHooks.configs.recommended.rules, 'react/prop-types': 'off', 'react/react-in-jsx-scope': 'off', 'no-alert': 'error' },
+    rules: {
+      ...react.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
+      'react/prop-types': 'off',
+      'react/react-in-jsx-scope': 'off',
+      'no-alert': 'error',
+    },
   },
 ];

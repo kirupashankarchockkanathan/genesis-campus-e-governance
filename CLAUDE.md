@@ -3,10 +3,12 @@
 Read docs/PROJECT_SPEC.md before any change. It is the source of truth.
 
 ## Stack
+
 React 18 + Vite (apps/web), Node 20 + Express (apps/api), shared Zod schemas and constants
 (packages/shared), Knex on SQLite (dev/tests) and PostgreSQL (hosted). Plain JavaScript (ES modules).
 
 ## Rules
+
 - Permission keys, statuses and error codes come from packages/shared. Never retype them.
 - Check permissions on the server in middleware or services. The UI only hides controls.
 - Migrations must run on SQLite and PostgreSQL: no enums, JSON as text, UUID text ids, UTC timestamps via helpers.
@@ -18,7 +20,9 @@ React 18 + Vite (apps/web), Node 20 + Express (apps/api), shared Zod schemas and
 - Record any decision not in the spec in docs/DECISIONS.md. Update CHANGELOG.md after each task.
 
 ## Commands
+
 npm run dev | npm test | npm run test:pg | npm run test:e2e | npm run lint | npm run db:reset
 
 ## Order of work
+
 Follow section 17 of the spec, phase by phase. Do not start a phase until the previous exit tests pass.
