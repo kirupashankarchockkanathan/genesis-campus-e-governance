@@ -5,6 +5,10 @@
       "destination": "https://campus-api-oq8k.onrender.com/api/:path*"
     },
     {
+      "source": "/uploads/:path*",
+      "destination": "https://campus-api-oq8k.onrender.com/uploads/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
