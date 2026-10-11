@@ -108,25 +108,31 @@ export function precheckRequest(req, { conflicts = [], venueCapacity } = {}) {
   return { findings };
 }
 
-export const ASSISTANT_FALLBACK =
-  "I can only answer from the small demo reference set, and I couldn't find enough information to verify that. Please check the approved event listing or the relevant university office.";
+import {
+  REFUSAL,
+  clubsForInterest,
+  describeClub,
+  faqMatches,
+  findClubByName,
+  isInScope,
+  smallTalk,
+} from './knowledge.js';
 
-export function localAssistant(question, { events = [], clubs = [], todayISO }) {
-  const t = question.toLowerCase();
+export const ASSISTANT_FALLBACK =
+  'I could not find that in the portal. Try the Clubs Directory or Explore Events, or ask the Office of Student Affairs.';
+
+const eventsAnswer = (t, { events = [], todayISO }) => {
   const upcoming = events
     .filter((e) => e.date >= todayISO && e.status !== 'closed')
     .sort((a, b) => a.date.localeCompare(b.date));
   const list = (arr) => arr.map((e) => `${e.title} (${e.dateLabel}, ${e.venue})`).join('; ');
-
+  const named = events.find((e) => t.includes(e.title.toLowerCase()));
+  if (named)
+    return `${named.title}: ${named.dateLabel}, ${named.time} to ${named.endTime} at ${named.venue}, by ${named.organizer}. ${named.closesLong}. ${named.registered} of ${named.capacity} seats taken (${named.status}). Open to: ${named.audience}.`;
   if (/hackathon|beginner/.test(t)) {
     const h = upcoming.filter((e) => e.category === 'Hackathon');
     if (h.length)
-      return `Approved hackathons coming up: ${list(h)}. Open to all current students — no prior experience needed. Check the event page for the registration deadline.`;
-  }
-  if (/robotic/.test(t)) {
-    const c = clubs.filter((x) => /robot/i.test(`${x.name} ${x.category} ${x.blurb} ${x.tag}`));
-    if (c.length)
-      return `${c.map((x) => `${x.name} (${x.members} members, ${x.upcoming} upcoming event${x.upcoming === 1 ? '' : 's'})`).join('; ')} focuses on robotics.`;
+      return `Approved hackathons coming up: ${list(h)}. Open to all current students, no prior experience needed. Check the event page for the registration deadline.`;
   }
   if (/week|happening|this month|today|soon/.test(t)) {
     const horizon = /month/.test(t) ? 31 : 8;
@@ -134,17 +140,65 @@ export function localAssistant(question, { events = [], clubs = [], todayISO }) 
     const near = upcoming.filter((e) => (new Date(`${e.date}T00:00:00`) - base) / 86400000 <= horizon);
     if (near.length) return `${/month/.test(t) ? 'This month' : 'In the next few days'}: ${list(near)}.`;
   }
-  if (/event|workshop|talk|fest|sport|cultural/.test(t) && upcoming.length) {
+  if (/deadline|closes|closing/.test(t) && upcoming.length)
+    return `Registration deadlines: ${upcoming
+      .slice(0, 5)
+      .map((e) => `${e.title} closes ${e.closes}`)
+      .join('; ')}.`;
+  if (
+    /(upcoming|events|workshop|talk|fest|sports|cultural).*(campus|coming|upcoming|list|any|what|which)|(any|what|which|list).*(events|workshops)/.test(
+      t,
+    ) &&
+    upcoming.length
+  )
     return `Upcoming approved events: ${list(upcoming.slice(0, 5))}. Only university-approved events are listed.`;
+  return null;
+};
+
+const INTEREST_CUE =
+  /\b(like|love|enjoy|interested|interest|into|passion|passionate|fan of|good at|learn|learning|want to|domain|suggest|recommend|clubs? (for|about|in|on|related)|which clubs?|any clubs?|suits?)\b/;
+
+/**
+ * Rule-based answers, used when no model key is set (or the model fails). Only clubs, events and portal questions
+ * are answered; anything else gets the refusal.
+ */
+export function localAssistant(question, ctx = {}) {
+  const { clubs = [], role, hasHistory } = ctx;
+  const t = question.toLowerCase();
+  const talk = smallTalk(question);
+  if (talk) return talk;
+  if (!isInScope(question, { clubs, hasHistory })) return REFUSAL;
+
+  const asksAboutEvents = /\b(events?|upcoming|hackathons?|workshops?|deadline|closes)\b/.test(t);
+  const named = findClubByName(question, clubs);
+  if (named && !asksAboutEvents) return describeClub(named);
+
+  if (
+    /\b(domains?|categories|category|types|kinds|groups?)\b/.test(t) &&
+    /\bclubs?\b/.test(t) &&
+    !INTEREST_CUE.test(t.replace(/domains?/g, ''))
+  ) {
+    const groups = [...new Set(clubs.map((c) => c.category))];
+    return `There are ${clubs.length} clubs in ${groups.length} groups: ${groups
+      .map((g) => `${g} (${clubs.filter((c) => c.category === g).length})`)
+      .join(
+        '; ',
+      )}. Tell me an interest, for example music, AI, debate or startups, and I will suggest clubs.`;
   }
-  if (/join|club/.test(t) && !/propose|new club|start/.test(t)) {
-    return 'Open the Clubs Directory, pick a club and choose View club. In this prototype, favouriting only bookmarks a club — it does not enrol you. Official membership steps come from each club.';
+
+  const faq = faqMatches(question, role);
+  if (faq.length && !INTEREST_CUE.test(t)) return faq.map((f) => f.text).join(' ');
+
+  const ev = eventsAnswer(t, ctx);
+  if (ev) return ev;
+
+  const matches = clubsForInterest(question, clubs);
+  if (matches.length && (INTEREST_CUE.test(t) || !faq.length)) {
+    const lines = matches.map((m) => `${m.club.name} (${m.club.category}): ${m.club.blurb}`);
+    return `These clubs fit that interest: ${lines.join(' | ')}`;
   }
-  if (/propose|document|new club|start a club/.test(t)) {
-    return 'To propose a new club, OSA expects a draft club constitution, a faculty advisor consent letter, and a founding members list with at least 10 students. OSA also checks the idea against existing clubs for overlap. (Demo reference set — confirm with OSA.)';
-  }
-  if (/publish|approval|approve/.test(t)) {
-    return 'Events appear on your dashboard only after online review, hard-copy letter verification, final OSA approval and publication by the Events Section.';
-  }
+  if (faq.length) return faq.map((f) => f.text).join(' ');
+  if (/\b(all|list|how many)\b.*\bclubs?\b|\bwhich clubs? (are|do)\b/.test(t))
+    return `The directory has ${clubs.length} clubs: ${clubs.map((c) => c.name).join('; ')}.`;
   return ASSISTANT_FALLBACK;
 }

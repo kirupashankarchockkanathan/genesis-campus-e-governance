@@ -45,3 +45,10 @@ Browser (frontend)  <->  Express API (backend)  <->  PostgreSQL (Neon) / SQLite
 ## Frontend (`frontend/src`)
 
 `pages/` (student, club, admin screens), `components/`, `context/` (auth, governance state, student state), `utils/http.js` (API client; base URL from `VITE_API_URL`), `utils/api.js` (every call the screens make), Tailwind theme in `tailwind.config.js` (AM Maroon `#A4123F`, Open Sans).
+
+## Chat assistant
+
+1. **Gate:** `shared/src/gov/knowledge.js` decides if a message is about clubs, events or the portal. Greetings are answered at once; maths, code, homework, jokes, general knowledge and "ignore your rules" messages are refused with a fixed sentence and never reach a model.
+2. **Context:** the backend builds the pieces a model may use: one entry per club (what it is for, interest keywords), interest and group lists, process notes for the caller's role, upcoming events with live seat counts, and (club or admin) their own requests or the review queue. Keyword overlap ranks them (a light RAG, no vector database).
+3. **Model:** with a key (`backend/src/lib/llm.js`: Groq or Claude) the model gets the ranked pieces as untrusted data and a strict system prompt; if it still judges the message off-topic it answers OFF_TOPIC, which becomes the refusal.
+4. **Fallback:** with no key, or if the model fails, the rule-based answers in `shared/src/gov/ai.js` use the same knowledge.

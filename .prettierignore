@@ -10,3 +10,4 @@ frontend/src/services
 frontend/src/index.css
 frontend/src/test/ui.test.jsx
 frontend/src/App.jsx
+docs/PROJECT_SPEC.md

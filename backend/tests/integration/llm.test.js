@@ -11,7 +11,7 @@ describe('chat model client', () => {
   it('is off without a key, and Groq when GROQ_API_KEY is set', () => {
     expect(createLlmClient()).toBeNull();
     overrideConfig({ GROQ_API_KEY: 'gsk_test' });
-    expect(createLlmClient()).toMatchObject({ provider: 'groq', model: 'llama-3.3-70b-versatile' });
+    expect(createLlmClient()).toMatchObject({ provider: 'groq', model: 'openai/gpt-oss-120b' });
     overrideConfig({ LLM_MODEL: 'llama-3.1-8b-instant' });
     expect(createLlmClient().model).toBe('llama-3.1-8b-instant');
   });

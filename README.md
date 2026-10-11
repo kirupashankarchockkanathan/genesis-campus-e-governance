@@ -58,7 +58,7 @@ Then `npm run db:migrate` (creates the tables) and `npm run db:seed` (sample clu
 - **Login** is our own: bcrypt passwords, a signed access token (2 hours) and an httpOnly refresh cookie. Each account belongs to one portal (student, club, OSA, Events Section).
 - **Rules** (who may review, approve, publish) live in `shared/src/gov`. The browser runs them for instant feedback; the backend runs the same code as the authority, checks your role, and saves the result in one database transaction.
 - **Data** is stored as JSON documents in `gov_docs` plus `gov_registrations` (seats), `gov_user_state`, `gov_files` (posters) and the auth tables. Posters are stored in the database, so the backend needs no persistent disk.
-- **Chat** calls Claude from the backend only (`ANTHROPIC_API_KEY`). Without a key it answers portal questions and small talk with built-in rules.
+- **Chat** is a small assistant for every role, strictly limited to clubs, events and the portal. It explains what each club is for, suggests clubs for an interest (music, AI, debate, startups...), lists events and deadlines and explains how registration and approvals work. Anything else (maths, code, homework, general knowledge) is refused before any model is called. With `GROQ_API_KEY` (or `ANTHROPIC_API_KEY`) a language model writes the answer from the retrieved portal data (keyword retrieval over clubs, events and process notes, a light RAG); without a key the same knowledge answers with built-in rules. The key stays on the backend.
 
 See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) to put it online and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for details.
 

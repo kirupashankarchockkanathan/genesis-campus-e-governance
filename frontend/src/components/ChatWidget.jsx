@@ -5,10 +5,11 @@ import { Icon } from './ui';
 import { cn } from '../utils/helpers';
 
 const SUGGESTIONS = {
-  student: ['What events are happening this week?', 'Which clubs focus on robotics?', 'How do I register for an event?'],
+  student: ['What is GDSC for?', 'I like music, which clubs suit me?', 'Which clubs are there for AI?', 'How do I register for an event?'],
   club: ['What is the status of my requests?', 'How does event approval work?', 'What documents do I need?'],
   admin: ['What is waiting for review?', 'What needs OSA approval?', 'How do I publish an event?'],
 };
+const GREETING = 'Hi! I can tell you what each club is for, suggest clubs for your interests, and explain events and how the portal works.';
 
 /** Small floating chat available to every signed-in role. Answers come from the portal API (Claude when a key is set). */
 export default function ChatWidget() {
@@ -17,7 +18,7 @@ export default function ChatWidget() {
   const [busy, setBusy] = useState(false);
   const [text, setText] = useState('');
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: 'Hi! Ask me anything about events, clubs, requests or the approval process.' },
+    { role: 'assistant', content: GREETING },
   ]);
   const end = useRef(null);
   const inputRef = useRef(null);
@@ -29,7 +30,7 @@ export default function ChatWidget() {
     if (open) inputRef.current?.focus();
   }, [open]);
   useEffect(() => {
-    setMessages([{ role: 'assistant', content: 'Hi! Ask me anything about events, clubs, requests or the approval process.' }]);
+    setMessages([{ role: 'assistant', content: GREETING }]);
   }, [user?.userId]);
 
   if (!user) return null;
@@ -64,7 +65,7 @@ export default function ChatWidget() {
             <span className="grid h-8 w-8 place-items-center rounded-full bg-white/15"><Icon name="Bot" className="h-4 w-4" /></span>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-bold">GENESIS Assistant</div>
-              <div className="text-[10px] text-white/80">Ask me anything</div>
+              <div className="text-[10px] text-white/80">Clubs, events and the portal</div>
             </div>
             <button onClick={() => setOpen(false)} aria-label="Close chat" className="grid h-7 w-7 place-items-center rounded-full hover:bg-white/15">
               <Icon name="X" className="h-4 w-4" />

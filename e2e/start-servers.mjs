@@ -25,6 +25,7 @@ const apiEnv = {
   RATE_LIMIT_MAX: '10000',
   SEED_DEMO_PORTAL: 'true',
   ANTHROPIC_API_KEY: '',
+  GROQ_API_KEY: '', // the journeys must not depend on a live model
 };
 
 const reset = spawnSync(process.execPath, ['backend/scripts/dbReset.js'], {

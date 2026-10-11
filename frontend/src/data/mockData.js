@@ -101,11 +101,11 @@ export const DASH_UPDATES = [
 /* Campus AI (small, local reference set)                              */
 /* ------------------------------------------------------------------ */
 export const AI_SUGGESTIONS = [
-  'Any beginner-friendly hackathons this month?',
-  'Which clubs focus on robotics?',
+  'What is GDSC for?',
+  'I like music, which clubs suit me?',
+  'Which clubs are there for AI and robotics?',
   'What events are happening this week?',
-  'How can I join a campus club?',
-  'What documents are needed to propose a new club?',
+  'How do I register for an event?',
 ];
 
 export const AI_ANSWERS = [

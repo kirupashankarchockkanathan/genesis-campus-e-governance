@@ -162,7 +162,7 @@ test.describe('E2E-02 student registration', () => {
   test('the campus assistant answers from portal data', async ({ browser }) => {
     const { context, page } = await as(browser, 'student', /Good (morning|afternoon|evening)/);
     await page.goto('/student/assistant');
-    await page.getByRole('button', { name: 'Any beginner-friendly hackathons this month?' }).click();
+    await page.getByRole('button', { name: 'What events are happening this week?' }).click();
     await expect(page.getByText(/Innovation Sprint/).last()).toBeVisible({ timeout: 20_000 });
     await context.close();
   });
@@ -443,6 +443,25 @@ test.describe('E2E-07 chat and sign-out for every role', () => {
       await context.close();
     });
   }
+});
+
+test.describe('E2E-08 chat scope', () => {
+  test('explains clubs by interest and refuses anything else', async ({ browser }) => {
+    const { context, page } = await as(browser, 'student', /Good (morning|afternoon|evening), Arjun/);
+    await page.getByRole('button', { name: 'Open chat assistant' }).click();
+    const box = page.getByLabel('Message', { exact: true });
+    const send = page.getByRole('button', { name: 'Send message' });
+    await box.fill('I like music, which clubs suit me?');
+    await send.click();
+    await expect(page.getByText(/Raagasudha/).last()).toBeVisible();
+    await box.fill('What is GDSC for?');
+    await send.click();
+    await expect(page.getByText(/developer communities/).last()).toBeVisible();
+    await box.fill('solve 12*13+7');
+    await send.click();
+    await expect(page.getByText(/I can only help with GENESIS Campus Connect/).last()).toBeVisible();
+    await context.close();
+  });
 });
 
 test.describe('E2E-06 demo reset (kept last: it restores the sample data)', () => {

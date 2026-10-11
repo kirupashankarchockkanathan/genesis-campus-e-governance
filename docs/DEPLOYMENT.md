@@ -20,17 +20,18 @@ Three parts: the database (Neon), the backend (a Node service) and the frontend 
 - Root directory: repository root. Build: `npm install`. Start: `npm start -w backend` (or `node backend/src/server.js`).
 - Environment variables:
 
-| Variable            | Value                                                                                         |
-| ------------------- | --------------------------------------------------------------------------------------------- |
-| `NODE_ENV`          | `production`                                                                                  |
-| `DATABASE_CLIENT`   | `pg`                                                                                          |
-| `DATABASE_URL`      | the Neon connection string                                                                    |
-| `JWT_SECRET`        | a random string of 32+ characters (the server refuses to start in production without one)     |
-| `WEB_URL`           | the frontend URL, e.g. `https://campus.example.vercel.app` (several allowed, comma separated) |
-| `API_URL`           | the public URL of this backend, e.g. `https://campus-api.onrender.com`                        |
-| `AUTO_VERIFY_EMAIL` | `false` in production (the server refuses `true`), and set `SMTP_*` for real email            |
-| `SEED_DEMO_PORTAL`  | `false` (the demo accounts are never created in production anyway)                            |
-| `ANTHROPIC_API_KEY` | optional: turns on Claude answers in the chat                                                 |
+| Variable            | Value                                                                                                                                               |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NODE_ENV`          | `production`                                                                                                                                        |
+| `DATABASE_CLIENT`   | `pg`                                                                                                                                                |
+| `DATABASE_URL`      | the Neon connection string                                                                                                                          |
+| `JWT_SECRET`        | a random string of 32+ characters (the server refuses to start in production without one)                                                           |
+| `WEB_URL`           | the frontend URL, e.g. `https://campus.example.vercel.app` (several allowed, comma separated)                                                       |
+| `API_URL`           | the public URL of this backend, e.g. `https://campus-api.onrender.com`                                                                              |
+| `AUTO_VERIFY_EMAIL` | `false` in production (the server refuses `true`), and set `SMTP_*` for real email                                                                  |
+| `SEED_DEMO_PORTAL`  | `false` (the demo accounts are never created in production anyway)                                                                                  |
+| `GROQ_API_KEY`      | optional: turns on model-written chat answers (Groq, default model `openai/gpt-oss-120b`). `ANTHROPIC_API_KEY` works too; Groq wins if both are set |
+| `LLM_MODEL`         | optional: override the model name                                                                                                                   |
 
 - Health check URL: `/api/v1/health`.
 - The refresh cookie uses `SameSite=None; Secure` in production so it works when the frontend and backend are on different domains. Both must be served over HTTPS.

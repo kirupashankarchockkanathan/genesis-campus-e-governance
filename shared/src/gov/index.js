@@ -27,3 +27,4 @@ export * from './demoUsers.js';
 export * from './ai.js';
 export * from './views.js';
 export * from './views.js';
+export * from './knowledge.js';

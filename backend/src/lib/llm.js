@@ -6,7 +6,7 @@ const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 
 /** Groq client (OpenAI-compatible chat API, no extra package needed). */
 export function createGroqClient() {
-  const model = config.LLM_MODEL || 'llama-3.3-70b-versatile';
+  const model = config.LLM_MODEL || 'openai/gpt-oss-120b';
   return {
     provider: 'groq',
     model,
@@ -17,8 +17,10 @@ export function createGroqClient() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.GROQ_API_KEY}` },
         body: JSON.stringify({
           model,
-          max_tokens: 700,
+          max_completion_tokens: 900,
           temperature: 0.3,
+          // gpt-oss models reason before answering; keep it short so replies stay fast.
+          ...(model.startsWith('openai/gpt-oss') ? { reasoning_effort: 'low' } : {}),
           messages: [{ role: 'system', content: system }, ...messages],
         }),
         signal: signal ?? AbortSignal.timeout(config.CHAT_TIMEOUT_MS),

@@ -21,7 +21,8 @@ import { getAccessToken } from '../utils/http';
 const API = `${(import.meta.env?.VITE_API_URL ?? '').replace(/\/$/, '')}/api/v1/ai`;
 const TIMEOUT_MS = 12000;
 
-/** 'claude' | 'rules' once the server has said, null until then. */
+/** 'ai' | 'rules' once the server has said, null until then. */
+let provider = null;
 let engine = null;
 
 async function callApi(path, body) {
@@ -37,6 +38,7 @@ async function callApi(path, body) {
     const json = await res.json();
     const data = json?.data ?? json;
     if (data?.engine) engine = data.engine;
+    if (data?.provider) provider = data.provider;
     return data;
   } catch {
     return null; // network/timeout/server error -> local fallback
@@ -50,7 +52,7 @@ export const refreshAiStatus = () => callApi('/status');
 
 export const aiMode = () => {
   if (!API) return 'Local mock (no AI API configured)';
-  if (engine === 'claude') return 'AI service (Claude, via the portal API)';
+  if (engine === 'ai') return `AI service (${provider ?? 'model'}, via the portal API)`;
   if (engine === 'rules') return 'Portal rules (no AI key set on the server)';
   return 'AI service (with local fallback)';
 };
@@ -63,7 +65,7 @@ export { localDuplicateCheck };
 export async function detectDuplicateClubs(application, existingClubs, objectivesOf) {
   const remote = await callApi('/duplicate-clubs', { application });
   if (remote?.matches) {
-    return { source: remote.engine === 'claude' ? 'ai-service' : 'local-mock', ranAt: new Date().toISOString(), matches: remote.matches, summary: remote.summary || '' };
+    return { source: remote.engine === 'ai' ? 'ai-service' : 'local-mock', ranAt: new Date().toISOString(), matches: remote.matches, summary: remote.summary || '' };
   }
   const matches = localDuplicateCheck(application, existingClubs, objectivesOf);
   await new Promise((r) => setTimeout(r, 450)); // feel like a service call
@@ -82,7 +84,7 @@ export function precheckRequest(req, opts) {
 /* ------------------------------------------------------------------ */
 export async function askCampusAssistant(question, context) {
   const remote = await callApi('/assistant', { question });
-  if (remote?.answer) return { source: remote.engine === 'claude' ? 'ai-service' : 'local-mock', answer: remote.answer, grounded: remote.answer !== ASSISTANT_FALLBACK };
+  if (remote?.answer) return { source: remote.engine === 'ai' ? 'ai-service' : 'local-mock', answer: remote.answer, grounded: remote.answer !== ASSISTANT_FALLBACK };
   await new Promise((r) => setTimeout(r, 600));
   const answer = localAssistant(question, context);
   return { source: 'local-mock', answer, grounded: answer !== ASSISTANT_FALLBACK };
