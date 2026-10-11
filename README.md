@@ -254,6 +254,6 @@ Roadmap: real document storage and viewer, real membership records and recruitme
 
 **Team STORMBREAKER**
 
-Repository contributors (GitHub): [@shreesanth-78](https://github.com/shreesanth-78) · [@hemanthf224](https://github.com/hemanthf224) · [@kirupashankarchockkanathan](https://github.com/kirupashankarchockkanathan)
+Repository contributors (GitHub): [@shreesanth-78](https://github.com/shreesanth-78) · [@hemanthf224](https://github.com/hemanthf224) · [@kirupashankarchockkanathan](https://github.com/kirupashankarchockkanathan) . [@Adi-0202](https://github.com/Adi-0202)
 
 Built for the **GENESIS Hackathon 2026**. The original specification is kept in [`docs/PROJECT_SPEC.md`](docs/PROJECT_SPEC.md).
