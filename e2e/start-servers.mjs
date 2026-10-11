@@ -17,8 +17,8 @@ const apiEnv = {
   API_URL: 'http://localhost:4100',
   LOG_LEVEL: 'warn',
   DATABASE_CLIENT: 'sqlite3',
-  SQLITE_FILE: '../../e2e/.data/e2e.sqlite',
-  UPLOAD_DIR: '../../e2e/.data/uploads',
+  DATABASE_URL: '',
+  SQLITE_FILE: '../e2e/.data/e2e.sqlite',
   JWT_SECRET: 'e2e-secret-e2e-secret-e2e-secret-e2e-secret-1234',
   AUTO_VERIFY_EMAIL: 'true',
   BCRYPT_COST: '4',
@@ -27,19 +27,19 @@ const apiEnv = {
   ANTHROPIC_API_KEY: '',
 };
 
-const reset = spawnSync(process.execPath, ['apps/api/scripts/dbReset.js'], {
+const reset = spawnSync(process.execPath, ['backend/scripts/dbReset.js'], {
   cwd: root,
   env: apiEnv,
   stdio: 'inherit',
 });
 if (reset.status !== 0) process.exit(reset.status ?? 1);
 
-const api = spawn(process.execPath, ['apps/api/src/server.js'], { cwd: root, env: apiEnv, stdio: 'inherit' });
+const api = spawn(process.execPath, ['backend/src/server.js'], { cwd: root, env: apiEnv, stdio: 'inherit' });
 const web = spawn(
   process.execPath,
   [path.join(root, 'node_modules/vite/bin/vite.js'), '--port', '5273', '--strictPort'],
   {
-    cwd: path.join(root, 'apps/web'),
+    cwd: path.join(root, 'frontend'),
     env: { ...process.env, API_TARGET: 'http://localhost:4100' },
     stdio: 'inherit',
   },

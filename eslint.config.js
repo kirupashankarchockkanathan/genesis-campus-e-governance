@@ -4,7 +4,7 @@ import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 
 export default [
-  { ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**', 'apps/api/uploads/**'] },
+  { ignores: ['**/node_modules/**', '**/dist/**', '**/coverage/**', 'frontend/dist/**'] },
   js.configs.recommended,
   {
     files: ['**/*.{js,jsx,mjs}'],
@@ -16,7 +16,7 @@ export default [
     rules: { 'no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }] },
   },
   {
-    files: ['apps/web/**/*.{js,jsx}'],
+    files: ['frontend/**/*.{js,jsx}'],
     plugins: { react, 'react-hooks': reactHooks },
     settings: { react: { version: '18' } },
     languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
@@ -31,7 +31,7 @@ export default [
     },
   },
   {
-    files: ['apps/web/src/pages/**/*.jsx'],
+    files: ['frontend/src/pages/**/*.jsx'],
     rules: { 'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }] },
   },
 ];

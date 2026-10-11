@@ -1,5 +1,5 @@
 {
-  "name": "@ccp/e2e",
+  "name": "@gcc/e2e",
   "private": true,
   "type": "module",
   "version": "0.1.0",

@@ -1,27 +1,29 @@
 {
-  "name": "campus-clubs-portal",
+  "name": "genesis-campus-connect",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.1.0",
   "type": "module",
   "workspaces": [
-    "apps/*",
-    "packages/*",
+    "backend",
+    "frontend",
+    "shared",
     "e2e"
   ],
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "dev": "concurrently -n api,web -c red,white \"npm run dev -w apps/api\" \"npm run dev -w apps/web\"",
-    "db:migrate": "npm run db:migrate -w apps/api",
-    "db:rollback": "npm run db:rollback -w apps/api",
-    "db:seed": "npm run db:seed -w apps/api",
-    "db:reset": "npm run db:reset -w apps/api",
-    "test": "npm test -w packages/shared && npm test -w apps/api && npm test -w apps/web",
-    "test:pg": "npm run test:pg -w apps/api",
+    "dev": "concurrently -n api,web -c red,white \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "dev:backend": "npm run dev -w backend",
+    "dev:frontend": "npm run dev -w frontend",
+    "build": "npm run build -w frontend",
+    "db:migrate": "npm run db:migrate -w backend",
+    "db:seed": "npm run db:seed -w backend",
+    "db:reset": "npm run db:reset -w backend",
+    "test": "npm test -w shared && npm test -w backend && npm test -w frontend",
+    "test:pg": "npm run test:pg -w backend",
     "test:e2e": "npm test -w e2e",
-    "lint": "eslint . && prettier --check .",
-    "prepare": "husky"
+    "lint": "eslint . && prettier --check ."
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
@@ -30,7 +32,6 @@
     "eslint-plugin-react": "^7.37.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "globals": "^15.0.0",
-    "husky": "^9.1.7",
     "prettier": "^3.3.0"
   }
 }
