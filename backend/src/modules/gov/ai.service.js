@@ -79,7 +79,7 @@ const PROCESS_NOTES = [
   },
 ];
 
-export const status = (llm) => ({ engine: llm ? 'claude' : 'rules' });
+export const status = (llm) => ({ engine: llm ? 'claude' : 'rules', provider: llm?.provider ?? null });
 
 /** Similar existing clubs for a club application. Uses the stored clubs, never a list sent by the browser. */
 export async function duplicateClubs(db, application) {

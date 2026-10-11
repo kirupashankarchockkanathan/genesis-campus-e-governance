@@ -41,6 +41,8 @@ const schema = z.object({
   // Development and end-to-end tests only: append every outgoing mail to this file as JSON lines.
   MAIL_OUTBOX_FILE: z.string().default(''),
   MAIL_FROM: z.string().default('Campus Clubs Portal <no-reply@campus.example>'),
+  // Chat model: set GROQ_API_KEY (Groq) or ANTHROPIC_API_KEY (Claude). Groq wins when both are set.
+  GROQ_API_KEY: z.string().default(''),
   ANTHROPIC_API_KEY: z.string().default(''),
   LLM_MODEL: z.string().default(''),
   CHAT_TIMEOUT_MS: z.coerce.number().default(20000),
