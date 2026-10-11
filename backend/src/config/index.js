@@ -5,8 +5,9 @@ import { z } from 'zod';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const apiRoot = path.resolve(here, '../..');
-dotenv.config({ path: path.resolve(apiRoot, '../.env') });
+// backend/.env wins; a .env at the repository root is only a fallback for variables it does not set.
 dotenv.config({ path: path.resolve(apiRoot, '.env') });
+dotenv.config({ path: path.resolve(apiRoot, '../.env') });
 
 const bool = (def) =>
   z
