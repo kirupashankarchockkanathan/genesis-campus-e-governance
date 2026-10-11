@@ -235,22 +235,8 @@ Optional AI: set `GROQ_API_KEY` (or `ANTHROPIC_API_KEY`) in `backend/.env`. With
 
 Designed as two independent deployables plus a managed database: **frontend** on Vercel or Netlify (`frontend/vercel.json` is included and forwards `/api` to the backend), **backend** on Render, Railway or Fly (`npm start -w backend`), **database** on Neon. Environment variables, the cross-domain cookie setup and a checklist are in [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
-## 12. Honest status and roadmap
 
-What is solid: the whole approval workflow, role enforcement, per-portal data, seat registration, posters, the club directory, the AI chat and notification copy, and the test suite above, all verified on a PostgreSQL (Neon) database in manual runs and on SQLite in automated ones.
-
-What we want the jury to know we have **not** done yet, so nothing is oversold:
-
-- The automated backend tests run on in-memory SQLite; migrations and seeding were run against Neon and the app was exercised on it by hand, but the full test suite has not been run against PostgreSQL.
-- The Groq/Claude calls are covered by tests with a stand-in model and by manual live checks; there is no automated test against the real service.
-- Uploaded **documents** (permission letter, proposal, venue form) are recorded by name and size only; posters are stored as images. Real document storage is the next step.
-- Club **member lists** are generated sample data, not real membership records.
-- The sample data uses a fixed demo date (10 October 2026) so deadlines stay meaningful.
-- Rate limits and login lockout are in memory (one backend instance); email delivery is wired but untested with a real mail account.
-
-Roadmap: real document storage and viewer, real membership records and recruitment, email and push delivery of notifications, venue and hall booking with conflict prevention, analytics for OSA, and embeddings-based retrieval if the knowledge base grows.
-
-## 13. Team
+## 12. Team
 
 **Team STORMBREAKER**
 
