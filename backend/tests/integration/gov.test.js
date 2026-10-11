@@ -425,7 +425,7 @@ describe('student registrations, favourites and notifications', () => {
     const reg = await s.post('/gov/student/registrations', { eventId: 'innovation-sprint' });
     expect(reg.status).toBe(201);
     expect(reg.body.data.registrations.map((r) => r.eventId)).toContain('innovation-sprint');
-    expect(reg.body.data.notifications[0].title).toBe('Your registration is confirmed');
+    expect(reg.body.data.notifications[0].title).toMatch(/^You're in!/);
 
     const again = await s.post('/gov/student/registrations', { eventId: 'innovation-sprint' });
     expect(again.status).toBe(201);
@@ -705,6 +705,16 @@ describe('chat scope: clubs, events and the portal only', () => {
     expect(groups.body.data.answer).toMatch(/26 clubs in 4 groups/);
   });
 
+  it('lists the current events instead of sending people to look manually', async () => {
+    const s = await session('STU2026001');
+    for (const q of ['what are the current events', 'any events?', 'what is happening now']) {
+      const res = await s.post('/ai/chat', { message: q });
+      expect(res.body.data.refused).toBeFalsy();
+      expect(res.body.data.answer).toMatch(/GENESIS Innovation Sprint/);
+      expect(res.body.data.answer).not.toMatch(/could not find/);
+    }
+  });
+
   it('answers how the portal works, by role', async () => {
     const s = await session('STU2026001');
     const reg = await s.post('/ai/chat', { message: 'How do I register for an event?' });
@@ -765,5 +775,67 @@ describe('chat scope: clubs, events and the portal only', () => {
       'what is happening this week?',
     );
     expect(calls[0].messages.at(-1).content).toContain('GENESIS Innovation Sprint');
+  });
+});
+
+describe('publishing writes an event-specific quote with the chat model', () => {
+  const publishWith = async (llm, title) => {
+    const a = buildTestApp(knex, { llm });
+    const login = async (id) => {
+      const r = await request(a)
+        .post(`${BASE}/auth/login`)
+        .send({ identifier: id, password: demo(id).password, portal: portalOf(demo(id)) });
+      return { Authorization: `Bearer ${r.body.data.accessToken}`, 'X-Portal': portalOf(demo(id)) };
+    };
+    const act = (h, name, ...args) => request(a).post(`${BASE}/gov/actions/${name}`).set(h).send({ args });
+    const [club, events, osa] = [await login('CLUB001'), await login('EVT001'), await login('OSA001')];
+    const id = (
+      await act(club, 'saveRequest', goodRequest({ title, category: 'Hackathon' }), { submit: true })
+    ).body.data.extra.id;
+    await act(events, 'reviewRequest', id, { decision: 'clear' });
+    await act(events, 'recordPhysical', id, {
+      status: 'verified',
+      receivedOn: '2026-10-10',
+      refNo: 'EVT/HC/2026/9100',
+    });
+    await act(osa, 'finalApprove', id, { note: 'ok' });
+    // whatever the browser sends as options is ignored
+    const res = await act(events, 'publishRequest', id, { quote: 'Free pizza for everyone, click now!!!' });
+    expect(res.body.data.ok).toBe(true);
+    return res.body.data.extra.notice;
+  };
+
+  it('puts the model line in the notice, after cleaning it, and shows the model only that event', async () => {
+    const calls = [];
+    const llm = {
+      ask: async (a) => (
+        calls.push(a),
+        { text: '"**Teams** that ship at 3 AM become legends 🚀"\nextra line', refused: false }
+      ),
+    };
+    const notice = await publishWith(llm, 'Midnight Maker Sprint');
+    expect(notice.body).toContain('"Teams that ship at 3 AM become legends."');
+    expect(notice.body).not.toContain('Free pizza');
+    expect(notice.title).toBe('🚀 Midnight Maker Sprint just dropped');
+    expect(calls).toHaveLength(1);
+    expect(calls[0].messages[0].content).toContain('Title: Midnight Maker Sprint');
+    expect(calls[0].system).toMatch(/Maximum 14 words/);
+  });
+
+  it('falls back to the static quote when the model fails, is slow, or answers with junk', async () => {
+    for (const llm of [
+      null,
+      {
+        ask: async () => {
+          throw new Error('down');
+        },
+      },
+      { ask: async () => ({ text: 'Visit http://spam.example now', refused: false }) },
+      { ask: async () => ({ text: '', refused: true }) },
+    ]) {
+      const notice = await publishWith(llm, `Fallback Night ${Math.random().toString(36).slice(2, 6)}`);
+      expect(notice.title).toMatch(/just dropped$/);
+      expect(notice.body).toMatch(/Ideas are cheap|Great teams|Someone on this campus/); // the Hackathon static quotes
+    }
   });
 });

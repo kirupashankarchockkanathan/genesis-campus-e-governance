@@ -11,6 +11,7 @@ import {
 import { errors } from '../../lib/errors.js';
 import { config } from '../../config/index.js';
 import { saveImage } from './files.service.js';
+import { eventQuote } from './quote.service.js';
 import { loadState, lockState, saveState } from './state.js';
 import { portalUser } from './portal.js';
 
@@ -143,16 +144,35 @@ function duplicateCheckFor(state, applicationId) {
   };
 }
 
+/** The model's hook line for the event about to be published, or null (the static quote is used then). */
+async function quoteFor(db, llm, requestId) {
+  if (!llm || typeof requestId !== 'string') return null;
+  const state = await loadState(db);
+  const r = state.requests.find((x) => x.id === requestId);
+  if (!r || r.status !== 'approved') return null;
+  const club = selectors.allClubs(state).find((c) => c.id === r.clubId);
+  return eventQuote(llm, {
+    title: r.title,
+    category: r.category,
+    description: r.description,
+    clubName: club?.name,
+    venue: r.venue,
+  });
+}
+
 /**
  * Runs one workflow action as the signed-in person, on the stored state, inside a transaction.
  * The engine's own permission checks apply; the portal check here only stops obviously wrong callers early.
  */
-export async function runAction(db, user, portal, name, rawArgs) {
+export async function runAction(db, user, portal, name, rawArgs, { llm = null } = {}) {
   const allowed = Object.hasOwn(ACTIONS, name) ? ACTIONS[name] : null;
   if (!allowed) throw errors.notFound('Unknown action.');
   const actor = await portalUser(db, user, portal);
   if (!allowed.includes(portal)) throw errors.forbidden('Your role is not permitted to do this.');
   const args = await prepareArgs(db, name, rawArgs);
+  // Publishing sends students a notification. The chat model writes an event-specific hook line for it (before the
+  // transaction, so no lock is held while waiting); the browser's own options are ignored.
+  if (name === 'publishRequest') args[1] = { quote: await quoteFor(db, llm, args[0]) };
 
   return db.transaction(async (trx) => {
     await lockState(trx);

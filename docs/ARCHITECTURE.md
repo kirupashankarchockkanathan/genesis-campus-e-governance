@@ -1,7 +1,7 @@
 # Architecture
 
 ```
-Browser (frontend)  <->  Express API (backend)  <->  PostgreSQL (Neon) / SQLite
+Browser (frontend)  <->  Express API (backend)  <->  PostgreSQL (Neon)
         \                       /
          shared/src/gov  (rules, workflow, views, sample data)
                          |
@@ -13,7 +13,7 @@ Browser (frontend)  <->  Express API (backend)  <->  PostgreSQL (Neon) / SQLite
 | Folder          | Contents                                                                    |
 | --------------- | --------------------------------------------------------------------------- |
 | `config/`       | Environment variables, validated at start                                   |
-| `db/`           | Knex setup (SQLite and TLS PostgreSQL), 5 migrations, seeds                 |
+| `db/`           | Knex setup (TLS PostgreSQL; SQLite for tests only), 5 migrations, seeds     |
 | `middleware/`   | Sign-in check, validation, rate limit, error handler, request id            |
 | `lib/`          | Tokens, clock, errors, logger, mailer, audit log, Claude client             |
 | `modules/auth`  | Login, refresh rotation with reuse detection, logout, signup, verify, reset |

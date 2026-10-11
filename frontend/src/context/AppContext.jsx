@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { registrationNotice } from '@gcc/shared/gov';
 import { useAuth } from './AuthContext';
 import { useGov } from './GovContext';
 import {
@@ -127,8 +128,13 @@ export function AppProvider({ children }) {
               type: 'registration',
               label: 'Registration',
               time: 'Just now',
-              title: 'Your registration is confirmed',
-              body: `You're on the list for ${ev.title} on ${ev.dateLabel} at ${ev.time}.`,
+              ...registrationNotice({
+                title: ev.title,
+                category: ev.category,
+                when: `${ev.dateLabel}, ${ev.time}`,
+                venue: ev.venue,
+                seed: eventId,
+              }),
               eventId,
               unread: true,
               kind: 'event',

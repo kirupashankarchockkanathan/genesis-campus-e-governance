@@ -17,7 +17,7 @@ Three parts: the database (Neon), the backend (a Node service) and the frontend 
 
 ## 2. Backend (Render, Railway, Fly.io, a VPS...)
 
-- Root directory: repository root. Build: `npm install`. Start: `npm start -w backend` (or `node backend/src/server.js`).
+- Root directory: repository root. Build: `npm install --omit=dev` (SQLite is a dev dependency and is not needed). Start: `npm start -w backend` (or `node backend/src/server.js`).
 - Environment variables:
 
 | Variable            | Value                                                                                                                                               |

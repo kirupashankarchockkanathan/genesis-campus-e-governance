@@ -5,8 +5,9 @@ import { z } from 'zod';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const apiRoot = path.resolve(here, '../..');
-dotenv.config({ path: path.resolve(apiRoot, '../.env') });
+// backend/.env wins; a .env at the repository root is only a fallback for variables it does not set.
 dotenv.config({ path: path.resolve(apiRoot, '.env') });
+dotenv.config({ path: path.resolve(apiRoot, '../.env') });
 
 const bool = (def) =>
   z
@@ -22,7 +23,8 @@ const schema = z.object({
   API_URL: z.string().default('http://localhost:4000'),
   LOG_LEVEL: z.string().default('info'),
   APP_TIMEZONE: z.string().default('Asia/Kolkata'),
-  DATABASE_CLIENT: z.enum(['sqlite3', 'pg']).default('sqlite3'),
+  // PostgreSQL (Neon) is the database. sqlite3 exists only for the automated tests and the end-to-end stack.
+  DATABASE_CLIENT: z.enum(['sqlite3', 'pg']).default('pg'),
   SQLITE_FILE: z.string().default('./data/dev.sqlite'),
   DATABASE_URL: z.string().optional(),
   // 'lax' when the site and API share a domain; 'none' (needs HTTPS) when they are on different domains.

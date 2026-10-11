@@ -146,12 +146,18 @@ const eventsAnswer = (t, { events = [], todayISO }) => {
       .map((e) => `${e.title} closes ${e.closes}`)
       .join('; ')}.`;
   if (
-    /(upcoming|events|workshop|talk|fest|sports|cultural).*(campus|coming|upcoming|list|any|what|which)|(any|what|which|list).*(events|workshops)/.test(
+    /\b(events?|workshops?|fests?|happening|going on|ongoing|current|latest|available|what's on|whats on|open for registration|things to do)\b/.test(
       t,
     ) &&
     upcoming.length
   )
-    return `Upcoming approved events: ${list(upcoming.slice(0, 5))}. Only university-approved events are listed.`;
+    return `Here are the events open right now: ${upcoming
+      .slice(0, 6)
+      .map(
+        (e) =>
+          `${e.title} (${e.dateLabel}, ${e.time}, ${e.venue}${e.status === 'full' ? ', full' : e.status === 'closing' ? ', closing soon' : ''})`,
+      )
+      .join('; ')}. Open Explore Events to register.`;
   return null;
 };
 
