@@ -34,6 +34,9 @@ export function buildKnexConfig({ client = config.DATABASE_CLIENT, filename, con
       pool: { min: 0, max: 10 },
     };
   }
+  // SQLite is for the automated tests and the end-to-end stack only, never for a running service.
+  if (config.isProd)
+    throw new Error('SQLite is not allowed in production. Set DATABASE_CLIENT=pg and DATABASE_URL.');
   const file = filename ?? path.resolve(config.apiRoot, config.SQLITE_FILE);
   if (file !== ':memory:') fs.mkdirSync(path.dirname(file), { recursive: true });
   return {

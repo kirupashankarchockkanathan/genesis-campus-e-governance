@@ -28,7 +28,7 @@ const apiEnv = {
   GROQ_API_KEY: '', // the journeys must not depend on a live model
 };
 
-const reset = spawnSync(process.execPath, ['backend/scripts/dbReset.js'], {
+const reset = spawnSync(process.execPath, ['e2e/setup-db.mjs'], {
   cwd: root,
   env: apiEnv,
   stdio: 'inherit',

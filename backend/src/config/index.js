@@ -23,7 +23,8 @@ const schema = z.object({
   API_URL: z.string().default('http://localhost:4000'),
   LOG_LEVEL: z.string().default('info'),
   APP_TIMEZONE: z.string().default('Asia/Kolkata'),
-  DATABASE_CLIENT: z.enum(['sqlite3', 'pg']).default('sqlite3'),
+  // PostgreSQL (Neon) is the database. sqlite3 exists only for the automated tests and the end-to-end stack.
+  DATABASE_CLIENT: z.enum(['sqlite3', 'pg']).default('pg'),
   SQLITE_FILE: z.string().default('./data/dev.sqlite'),
   DATABASE_URL: z.string().optional(),
   // 'lax' when the site and API share a domain; 'none' (needs HTTPS) when they are on different domains.
