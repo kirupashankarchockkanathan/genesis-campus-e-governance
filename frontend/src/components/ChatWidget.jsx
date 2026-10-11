@@ -33,7 +33,8 @@ export default function ChatWidget() {
     setMessages([{ role: 'assistant', content: GREETING }]);
   }, [user?.userId]);
 
-  if (!user) return null;
+  // Students have the full-page Campus AI Assistant, so the popup is for club authorities and administrators.
+  if (!user || user.role === 'student') return null;
   const kind = user.role === 'admin' ? 'admin' : user.role;
 
   const send = async (raw) => {

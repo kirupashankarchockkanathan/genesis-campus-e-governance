@@ -1,4 +1,4 @@
-import { DEMO_STUDENT_STATE, EMPTY_PREFS, selectors } from '@gcc/shared/gov';
+import { DEMO_STUDENT_STATE, EMPTY_PREFS, registrationNotice, selectors } from '@gcc/shared/gov';
 import { toDb } from '../../db/helpers.js';
 import { clock } from '../../lib/clock.js';
 import { errors } from '../../lib/errors.js';
@@ -107,8 +107,13 @@ export async function register(db, user, eventId) {
           type: 'registration',
           label: 'Registration',
           time: 'Just now',
-          title: 'Your registration is confirmed',
-          body: `You're on the list for ${ev.title} on ${ev.dateLabel} at ${ev.time}.`,
+          ...registrationNotice({
+            title: ev.title,
+            category: ev.category,
+            when: `${ev.dateLabel}, ${ev.time}`,
+            venue: ev.venue,
+            seed: eventId,
+          }),
           eventId,
           unread: true,
           kind: 'event',

@@ -234,7 +234,7 @@ test.describe('E2E-03 the approval path, role by role', () => {
     await student.page.reload();
     await expect(student.page.getByText(title).first()).toBeVisible();
     await student.page.goto('/student/notifications');
-    await expect(student.page.getByText(`New event: ${title}`).first()).toBeVisible();
+    await expect(student.page.getByText(`${title} just dropped`, { exact: false }).first()).toBeVisible();
     await student.page.goto('/student/events');
     await student.page.getByText(title).first().click();
     await student.page.getByRole('button', { name: /Register for this event/ }).click();
@@ -411,7 +411,6 @@ test.describe('E2E-05 every screen opens', () => {
 
 test.describe('E2E-07 chat and sign-out for every role', () => {
   for (const [who, home] of [
-    ['student', /Good (morning|afternoon|evening), Arjun/],
     ['club', /Google Developer Student Clubs/],
     ['osa', /Welcome back, Meera/],
   ]) {
@@ -448,9 +447,10 @@ test.describe('E2E-07 chat and sign-out for every role', () => {
 test.describe('E2E-08 chat scope', () => {
   test('explains clubs by interest and refuses anything else', async ({ browser }) => {
     const { context, page } = await as(browser, 'student', /Good (morning|afternoon|evening), Arjun/);
-    await page.getByRole('button', { name: 'Open chat assistant' }).click();
-    const box = page.getByLabel('Message', { exact: true });
-    const send = page.getByRole('button', { name: 'Send message' });
+    await page.goto('/student/assistant');
+    await expect(page.getByRole('button', { name: 'Open chat assistant' })).toHaveCount(0); // students use this page, not the popup
+    const box = page.getByLabel('Message Campus AI');
+    const send = page.getByRole('button', { name: 'Send', exact: true });
     await box.fill('I like music, which clubs suit me?');
     await send.click();
     await expect(page.getByText(/Raagasudha/).last()).toBeVisible();

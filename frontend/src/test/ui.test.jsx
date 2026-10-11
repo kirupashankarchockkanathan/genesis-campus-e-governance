@@ -86,7 +86,7 @@ describe('approval UI end to end', () => {
     expect((await screen.findAllByText('Alumni Dev Talks')).length).toBeGreaterThan(0);
 
     mount('STU2026001', '/student/notifications');
-    expect((await screen.findAllByText(/New event: Alumni Dev Talks/)).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/Alumni Dev Talks just dropped/)).length).toBeGreaterThan(0);
   });
 
   it('request corrections requires reason text and shows to club', async () => {

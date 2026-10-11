@@ -63,7 +63,11 @@ govRouter.post(
   validate({ body: actionSchema }),
   wrap(async (req, res) => {
     const portal = await portalFor(req);
-    res.json({ data: await gov.runAction(db(req), req.user, portal, req.params.name, req.body.args) });
+    res.json({
+      data: await gov.runAction(db(req), req.user, portal, req.params.name, req.body.args, {
+        llm: llmFor(req),
+      }),
+    });
   }),
 );
 

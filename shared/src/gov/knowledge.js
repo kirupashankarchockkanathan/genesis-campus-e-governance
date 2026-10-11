@@ -484,6 +484,7 @@ const SCOPE_WORDS = new Set(
     ' ',
   ),
 );
+const SCOPE_STEMS = new Set([...SCOPE_WORDS].map(stem));
 const GREETING =
   /^(hi|hello|hey|hii|hola|good (morning|afternoon|evening)|thanks|thank you|thx|ok|okay|bye|goodbye)\b/;
 // Task requests that are not about the portal, even when a club word sneaks in ("solve this coding question").
@@ -496,8 +497,7 @@ export function isInScope(question, { clubs = [], hasHistory = false } = {}) {
   if (!t) return false;
   const named = findClubByName(t, clubs);
   const portalWord =
-    tokens(t).some((w) => SCOPE_WORDS.has(w) || SCOPE_WORDS.has(`${w}s`)) ||
-    /\b(clubs?|events?|portal|genesis)\b/.test(t);
+    tokens(t).some((w) => SCOPE_STEMS.has(w)) || /\b(clubs?|events?|portal|genesis)\b/.test(t);
   if (OFF_TASK.test(t) && !named && !portalWord) return false;
   if (
     OFF_TASK.test(t) &&

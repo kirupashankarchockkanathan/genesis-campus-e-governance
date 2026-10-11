@@ -7,6 +7,7 @@
 
 import { CLUB_APP_DOCS, REQUEST_DOCS } from './govData.js';
 import { TODAY_ISO, allClubs, fmtDate, fmtDateTime, fmt12, initialsOf } from './selectors.js';
+import { newEventNotice } from './copy.js';
 import { actorKey, can, deniedReason, ownsClub } from './permissions.js';
 
 const ROLE_SHORT = { osa: 'OSA', events: 'Events Section', club: 'Club Authority', student: 'Student' };
@@ -342,7 +343,7 @@ export function finalApprove(state, actor, id, { note = '' } = {}) {
 }
 
 /** Publish an approved event to the Student Dashboard and notify students. */
-export function publishRequest(state, actor, id) {
+export function publishRequest(state, actor, id, { quote } = {}) {
   if (!can(actor, 'request.publish')) return fail(state, deniedReason('request.publish'));
   const cur = state.requests.find((r) => r.id === id);
   if (!cur) return fail(state, 'Request not found.');
@@ -355,8 +356,17 @@ export function publishRequest(state, actor, id) {
     type: 'club',
     label: 'New event',
     time: fmtDateTime(at),
-    title: `New event: ${cur.title}`,
-    body: `${club?.name || 'A club'} has published an approved event: ${cur.title}, ${fmtDate(cur.date)} at ${fmt12(cur.startTime)}, ${cur.venue}.`,
+    ...newEventNotice({
+      title: cur.title,
+      category: cur.category,
+      clubName: club?.name || 'A club',
+      when: `${fmtDate(cur.date)}, ${fmt12(cur.startTime)}`,
+      venue: cur.venue,
+      capacity: cur.capacity,
+      deadline: fmtDate(cur.regDeadline),
+      seed: cur.id,
+      quote,
+    }),
     eventId: `evt-${cur.id.toLowerCase()}`,
     unread: true,
     kind: 'club',
